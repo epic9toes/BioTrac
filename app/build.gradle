@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'me.tatarka.retrolambda'
+apply plugin: 'com.apollographql.apollo'
 
 android {
     compileSdkVersion 28
@@ -37,11 +38,16 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxjava:2.2.17'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 
-    // RxJava2 support
+    // RxJava2 support & Apollo client support
     implementation 'com.apollographql.apollo:apollo-rx2-support:1.3.0'
-
+    implementation 'com.apollographql.apollo:apollo-runtime:1.3.0'
+    implementation "com.apollographql.apollo:apollo-android-support:1.3.0"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+
+    // If not already on your classpath, you might need the jetbrains annotations
+    compileOnly("org.jetbrains:annotations:13.0")
+    testCompileOnly("org.jetbrains:annotations:13.0")
 }
