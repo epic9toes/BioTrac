@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    tools:context=".ScannerDetailActivity">
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
+        card_view:cardElevation="5dp"
+        android:layout_margin="20dp"
+        card_view:cardCornerRadius="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/button_ripple">
+
+            <TextView
+                android:id="@+id/deviceName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="LloydAnt 2309"
+                android:textStyle="bold"
+                android:textSize="25sp"
+                android:layout_marginBottom="5dp"/>
+
+            <TextView
+                android:id="@+id/deviceSN"
+                android:layout_below="@+id/deviceName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="LloydAnt 2309"
+                android:textStyle="bold"
+                android:textSize="25sp"
+                android:layout_marginBottom="5dp"/>
+
+            <TextView
+                android:id="@+id/batteryValue"
+                android:layout_below="@id/deviceSN"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Computer Engineering"
+                android:textSize="22sp"
+                android:textAlignment="center"
+                android:layout_marginBottom="5dp"/>
+
+            <TextView
+                android:id="@+id/deviceVersion"
+                android:layout_below="@id/batteryValue"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Esut/2001/02365"
+                android:textSize="18sp"
+                android:textAllCaps="true"
+                android:textAlignment="center"
+                android:layout_marginBottom="10dp"/>
+
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:id="@+id/searchPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+       android:layout_centerInParent="true"
+        android:orientation="vertical">
+        <ImageView
+            android:id="@+id/errorImg"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/sad"
+            android:layout_gravity="center"/>
+        <TextView
+            android:id="@+id/errorMsg"
+            android:layout_centerInParent="true"
+            android:textAlignment="center"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="50dp"
+            android:layout_marginRight="50dp"
+            android:textSize="18sp"
+            android:text="No Fingerprint Scanner found, please connect the appropriate Fingerprint Scanner."/>
+<Button
+    android:id="@+id/connectBtn"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Connect Scanner"
+    android:background="@drawable/rounded_btn"
+    android:padding="15dp"
+    android:textColor="@color/whiteColor"
+    android:layout_gravity="center"
+    android:layout_marginTop="20dp"/>
+    </LinearLayout>
+
+</RelativeLayout>

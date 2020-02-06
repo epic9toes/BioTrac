@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".LoginActivity"
+    android:background="@drawable/bg">
+
+    <include android:id="@+id/loading" layout="@layout/loading" android:visibility="gone"/>
+
+    <RelativeLayout
+        android:id="@+id/topPanel"
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:layout_weight="1.5">
+
+        <ImageView
+            android:layout_centerVertical="true"
+            android:id="@+id/logo"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:src="@drawable/app_logo"/>
+
+        <TextView
+            android:id="@+id/clientName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nnamdi Azikiwe University"
+            android:textAlignment="center"
+            android:layout_below="@id/logo"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/motto"
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Discipline, Self Reliance &amp; Exellence"
+            android:textAlignment="center"
+            android:layout_below="@id/clientName"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="14sp" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0px"
+        android:orientation="vertical"
+        android:layout_weight="2"
+        android:layout_gravity="bottom">
+
+        <AutoCompleteTextView
+            android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:inputType="textAutoComplete"
+            android:hint="Enter Reg No/Email/Phone"
+            android:background="@drawable/rounded_white"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:drawablePadding="5dp"
+            android:layout_marginBottom="20dp"
+            android:drawableStart="@drawable/ic_account_circle"/>
+
+        <AutoCompleteTextView
+            android:id="@+id/user_password"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:inputType="textPassword"
+            android:hint="Enter Password"
+            android:background="@drawable/rounded_white"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:drawablePadding="5dp"
+            android:drawableStart="@drawable/ic_lock"
+            android:layout_marginBottom="15dp"/>
+
+        <androidx.appcompat.widget.AppCompatCheckBox
+            app:buttonTint="@color/colorPrimaryDark"
+            android:layout_marginStart="15dp"
+            android:id="@+id/toggle"
+            android:textColor="@color/colorPrimaryDark"
+            android:text="Sign in as Admin"
+            android:textSize="15sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="40dp">
+
+        </androidx.appcompat.widget.AppCompatCheckBox>
+        <TextView
+            android:id="@+id/errorMsg"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:layout_marginBottom="10dp"
+            android:textColor="@color/failure"
+            android:text="Username or Password is incorrect"/>
+        <Button
+            android:id="@+id/login_btn"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:text="Log In"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawableStart="@drawable/ic_fingerprint"
+            android:drawablePadding="10dp"
+            android:paddingLeft="75dp"
+            android:paddingRight="85dp"
+            android:layout_gravity="center"/>
+
+
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_weight="0.4"
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
+
+        <TextView
+            android:id="@+id/appName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="BioTrac"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginTop="15dp"
+            android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:id="@+id/powered_by"
+            android:layout_below="@+id/appName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Powered by LloydAnt"
+            android:layout_centerHorizontal="true"/>
+
+        <ImageView
+            android:layout_width="15dp"
+            android:layout_height="20dp"
+            android:layout_below="@id/appName"
+            android:layout_alignEnd="@+id/appName"
+            android:layout_marginEnd="-54dp"
+            android:src="@drawable/lloydant_logo" />
+
+    </RelativeLayout>
+</androidx.appcompat.widget.LinearLayoutCompat>
