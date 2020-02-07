@@ -13,6 +13,7 @@
         android:layout_weight="1"
         android:layout_height="0dp"
         android:background="@drawable/bottom_curves">
+
         <ImageView
             android:id="@+id/backBtn"
             android:layout_width="wrap_content"
@@ -42,7 +43,7 @@
                 <androidx.appcompat.widget.AppCompatImageView
                     android:layout_width="100dp"
                     android:layout_height="100dp"
-                    android:src="@drawable/profile_img"
+                    android:src="@drawable/avatar"
                     android:scaleType="centerCrop"/>
 
             </androidx.cardview.widget.CardView>
@@ -73,6 +74,7 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/startPanel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
@@ -101,10 +103,57 @@
             android:textColor="@color/primaryText"
             android:textStyle="normal"/>
 
+        <Button
+            android:id="@+id/enrollFP"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:text="Enroll Fingerprint"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawableStart="@drawable/ic_fingerprint"
+            android:drawablePadding="10dp"
+            android:paddingLeft="75dp"
+            android:paddingRight="85dp"
+            android:layout_marginTop="15dp"
+            android:layout_gravity="center"/>
+
         <pl.droidsonroids.gif.GifImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/fingerprint2"/>
 
     </LinearLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/searchBtPanel"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:src="@drawable/sad"/>
+
+        <Button
+            android:id="@+id/searchBT"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:text="Search Bluetooth"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawableStart="@drawable/ic_fingerprint"
+            android:drawablePadding="10dp"
+            android:paddingLeft="75dp"
+            android:paddingRight="85dp"
+            android:layout_gravity="center"/>
+    </LinearLayout>
+
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -13,7 +13,9 @@ import com.lloydant.biotrac.models.Lecturer;
 import com.lloydant.biotrac.presenters.LecturerSearchActivityPresenter;
 import com.lloydant.biotrac.views.LecturerSearchActivityView;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -50,6 +52,12 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String token = mPreferences.getString("token", "Token not found!");
         mPresenter.GetLecturers(token);
+
+        mLecturerArrayList = new ArrayList<>();
+        mLecturerArrayList.add(new Lecturer("123","Prof. John Nsika",
+                "08032643363","johndoe@gmail.com",""));
+        mListAdapter = new LecturerListAdapter(mLecturerArrayList, this);
+        mRecyclerView.setAdapter(mListAdapter);
     }
 
     @Override
