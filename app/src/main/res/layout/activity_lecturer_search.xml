@@ -57,10 +57,11 @@
     </RelativeLayout>
 
     <include
+        android:visibility="gone"
         android:id="@+id/loading"
         layout="@layout/loading"/>
 
-    <include android:id="@+id/notFound"
+    <include android:visibility="gone" android:id="@+id/notFound"
         layout="@layout/not_found"/>
 
     <androidx.recyclerview.widget.RecyclerView
