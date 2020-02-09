@@ -3,9 +3,12 @@ package com.lloydant.biotrac;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.lloydant.biotrac.Repositories.implementations.LecturerSearchRepo;
 import com.lloydant.biotrac.customAdapters.LecturerListAdapter;
@@ -13,9 +16,7 @@ import com.lloydant.biotrac.models.Lecturer;
 import com.lloydant.biotrac.presenters.LecturerSearchActivityPresenter;
 import com.lloydant.biotrac.views.LecturerSearchActivityView;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,6 +34,10 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
     LecturerSearchActivityPresenter mPresenter;
     private View mLoading, mNotFound;
     private TextView errorMsg;
+    private EditText editTextSearch;
+    private ImageView closeBtn;
+
+    public  static  final String LecturerActivity = "LecturerActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +48,10 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
         mNotFound = findViewById(R.id.notFound);
         errorMsg = mNotFound.findViewById(R.id.errorMsg);
         mRecyclerView = findViewById(R.id.recyclerView);
+        editTextSearch = findViewById(R.id.editTextSearch);
+        closeBtn = findViewById(R.id.closeBtn);
+
+        closeBtn.setOnClickListener(view -> finish());
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -53,19 +62,52 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
         String token = mPreferences.getString("token", "Token not found!");
         mPresenter.GetLecturers(token);
 
-        mLecturerArrayList = new ArrayList<>();
-        mLecturerArrayList.add(new Lecturer("123","Prof. John Nsika",
-                "08032643363","johndoe@gmail.com",""));
-        mListAdapter = new LecturerListAdapter(mLecturerArrayList, this);
-        mRecyclerView.setAdapter(mListAdapter);
+
+        editTextSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                filterRecycler(editable.toString());
+            }
+        });
+
+    }
+
+    private void filterRecycler(String text) {
+        //new array list that will hold the filtered data
+        ArrayList<Lecturer> lecturers = new ArrayList<>();
+
+        //looping through existing elements
+        for (Lecturer lecturer : mLecturerArrayList) {
+            //if the existing elements contains the search input
+            if (lecturer.getEmail().toLowerCase().contains(text.toLowerCase()) || lecturer.getName().toLowerCase().contains(text.toLowerCase())) {
+                //adding the element to filtered list
+                lecturers.add(lecturer);
+            }
+        }
+
+        //calling a method of the adapter class and passing the filtered list
+        mListAdapter.filterList(lecturers);
     }
 
     @Override
     public void onLecturerClick(View view, int position) {
         String name = mLecturerArrayList.get(position).getName();
-        Toast.makeText(this, "Lecturer: clicked " + name, Toast.LENGTH_SHORT).show();
-        startActivity(new Intent(LecturerSearchActivity.this, EnrollFingerprintActivity.class));
-
+        String id = mLecturerArrayList.get(position).getId();
+        Intent intent = new Intent(LecturerSearchActivity.this, EnrollFingerprintActivity.class);
+        intent.putExtra("LecturerName", name);
+        intent.putExtra("LecturerID",id);
+        intent.putExtra(LecturerActivity, LecturerActivity);
+        startActivity(intent);
     }
 
     @Override
