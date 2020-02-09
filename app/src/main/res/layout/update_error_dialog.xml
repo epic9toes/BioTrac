@@ -40,7 +40,7 @@
             android:textAlignment="center"/>
 
         <Button
-            android:id="@+id/tryAgainBtn"
+            android:id="@+id/errorBtn"
             android:textStyle="bold"
             android:layout_width="match_parent"
             android:layout_height="60dp"

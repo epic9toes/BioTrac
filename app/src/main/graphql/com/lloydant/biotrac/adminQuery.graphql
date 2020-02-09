@@ -37,6 +37,11 @@ query GetStudentByNo($id: String!){
       fingerprint
       reg_no
       level
+      image
+      department {
+        id
+        name
+      }
     }
   }
 }

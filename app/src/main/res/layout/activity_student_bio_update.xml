@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     tools:context=".StudentBioUpdateActivity"
     android:background="@color/colorPrimaryDark"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    tools:ignore="RtlCompat">
     
     <RelativeLayout
         android:layout_weight="0.5"
@@ -57,7 +58,7 @@
             android:drawablePadding="10dp"
             android:focusable="true"
             android:drawableStart="@drawable/ic_search"
-            android:clickable="true"/>
+            android:clickable="true" />
 
         <Button
             android:id="@+id/btnSearch"
@@ -82,9 +83,10 @@
         android:orientation="vertical"
         android:background="@drawable/top_curves">
 
+
         <LinearLayout
             android:id="@+id/dataNotFound"
-            android:visibility="gone"
+            android:visibility="visible"
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -117,11 +119,12 @@
                 android:textAlignment="center"
                 android:textColor="@color/secondaryText"
                 android:padding="10dp"
-                android:text="Search for student with a valid Reg No or Name to see results."/>
+                android:text="Search for student with a valid Reg No to see results."/>
 
         </LinearLayout>
+  <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>
 
-<include android:id="@+id/includeStudentBio" layout="@layout/student_bio_update"/>
+<include android:visibility="gone" android:id="@+id/includeStudentBio" layout="@layout/student_bio_update"/>
 
     </RelativeLayout>
 </androidx.appcompat.widget.LinearLayoutCompat>

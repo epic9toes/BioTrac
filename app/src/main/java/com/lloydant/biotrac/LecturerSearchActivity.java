@@ -6,10 +6,9 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
-import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.lloydant.biotrac.Repositories.implementations.LecturerSearchRepo;
 import com.lloydant.biotrac.customAdapters.LecturerListAdapter;
@@ -20,7 +19,6 @@ import com.lloydant.biotrac.views.LecturerSearchActivityView;
 import java.util.ArrayList;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatEditText;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -37,6 +35,7 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
     private View mLoading, mNotFound;
     private TextView errorMsg;
     private EditText editTextSearch;
+    private ImageView closeBtn;
 
     public  static  final String LecturerActivity = "LecturerActivity";
 
@@ -50,6 +49,9 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
         errorMsg = mNotFound.findViewById(R.id.errorMsg);
         mRecyclerView = findViewById(R.id.recyclerView);
         editTextSearch = findViewById(R.id.editTextSearch);
+        closeBtn = findViewById(R.id.closeBtn);
+
+        closeBtn.setOnClickListener(view -> finish());
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
