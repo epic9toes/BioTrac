@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/backgroundColor"
-    tools:context=".LecturerSearchActivity">
+    tools:context=".LecturerSearchActivity"
+    tools:ignore="RtlCompat">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -35,9 +36,9 @@
             android:textSize="22sp"
             android:textStyle="normal"
             android:layout_marginBottom="40dp"
-            android:text="Lecturer Fingerprint Enrollment"/>
+            android:text="Lecturer Fingerprint Enrollment" />
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <EditText
             android:id="@+id/editTextSearch"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -57,12 +58,11 @@
     </RelativeLayout>
 
     <include
-        android:visibility="gone"
         android:id="@+id/loading"
         layout="@layout/loading"/>
 
-    <include android:visibility="gone" android:id="@+id/notFound"
-        layout="@layout/not_found"/>
+    <include android:id="@+id/notFound"
+        layout="@layout/not_found" android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

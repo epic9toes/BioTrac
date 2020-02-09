@@ -46,6 +46,11 @@ public class LecturerListAdapter extends RecyclerView.Adapter<LecturerListAdapte
         return mLecturers.size();
     }
 
+    public void filterList(ArrayList<Lecturer> lecturers) {
+        this.mLecturers = lecturers;
+        notifyDataSetChanged();
+    }
+
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         AppCompatImageView userImg;

@@ -17,7 +17,31 @@
             android:id="@+id/imageView1"
             android:layout_width="wrap_content"
             android:layout_height="200dp" />
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/deviceInfoPanel"
+    android:orientation="horizontal"
+    android:gravity="center"
+    android:visibility="gone"
+    android:layout_margin="15dp">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Connected to: "
+        android:textSize="16sp"
+        android:textColor="@color/whiteColor"
+        android:textStyle="normal"/>
+    <TextView
+    android:id="@+id/deviceName"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="HF4000AWQ"
+    android:textSize="18sp"
+    android:textColor="@color/whiteColor"
+    android:textStyle="normal"/>
+</LinearLayout>
         <ListView
             android:id="@+id/in"
             android:layout_width="match_parent"
@@ -68,9 +92,12 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_below="@id/imgContainer"
-            android:text="Hello Chukumaobim!"
+            android:text="Hello!"
             android:textSize="35sp"
             android:textAlignment="center"
+            android:lines="1"
+            android:ems="8"
+            android:ellipsize="end"
             android:textColor="@color/whiteColor"/>
 
         <TextView
@@ -109,37 +136,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Make sure your finger fits properly on the scanner for better capture experience."
-            android:textSize="15sp"
-            android:paddingRight="20dp"
-            android:paddingLeft="20dp"
-            android:textAlignment="center"
-            android:textColor="@color/primaryText"
-            android:textStyle="normal"/>
-
-        <Button
-            android:id="@+id/enrollFP"
-            android:textStyle="bold"
-            android:layout_width="wrap_content"
-            android:layout_height="60dp"
-            android:text="Enroll Fingerprint"
-            android:textAlignment="center"
-            android:textColor="@color/whiteColor"
-            android:background="@drawable/rounded_btn"
-            android:drawableStart="@drawable/ic_fingerprint"
-            android:drawablePadding="10dp"
-            android:paddingLeft="75dp"
-            android:paddingRight="85dp"
-            android:layout_marginTop="15dp"
-            android:layout_gravity="center"
-            android:drawableLeft="@drawable/ic_fingerprint" />
-
-        <TextView
-            android:id="@+id/deviceName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginBottom="10dp"
-            android:text="Bluetooth connected: HF4000AWQ"
             android:textSize="15sp"
             android:paddingRight="20dp"
             android:paddingLeft="20dp"
