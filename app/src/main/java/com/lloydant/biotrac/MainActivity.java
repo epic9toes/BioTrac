@@ -53,14 +53,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
     }
 
     void CheckAdminStatus(){
-//        Boolean isAdmin = getIntent().getExtras().getBoolean("isAdmin");
-//        if (isAdmin){
-//           mStudentMenu.setVisibility(View.GONE);
-//        } else {
-//           mAdminMenu.setVisibility(View.GONE);
-//        }
-
-        mAdminMenu.setVisibility(View.VISIBLE);
+        Boolean isAdmin = getIntent().getExtras().getBoolean("isAdmin");
+        if (isAdmin){
+           mStudentMenu.setVisibility(View.GONE);
+        } else {
+           mAdminMenu.setVisibility(View.GONE);
+        }
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String name = mPreferences.getString("name", "Name Placeholder");
         mUsername.setText(name);

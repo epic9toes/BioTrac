@@ -50,17 +50,15 @@ public class LoginActivity extends AppCompatActivity implements LoginActivityVie
 
 
         mLoginBtn.setOnClickListener(view -> {
-//            if (mCheckBox.isChecked()) {
-//                mPresenter.LoginAdmin(username.getText().toString().trim(),
-//                        password.getText().toString().trim());
-//            } else {
-//                mPresenter.LoginStudent(username.getText().toString().trim(),
-//                        password.getText().toString().trim());
-//            }
-//            mLoaderView.setVisibility(View.VISIBLE);
+            if (mCheckBox.isChecked()) {
+                mPresenter.LoginAdmin(username.getText().toString().trim(),
+                        password.getText().toString().trim());
+            } else {
+                mPresenter.LoginStudent(username.getText().toString().trim(),
+                        password.getText().toString().trim());
+            }
+            mLoaderView.setVisibility(View.VISIBLE);
 
-
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
         });
 
     }

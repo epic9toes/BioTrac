@@ -6,7 +6,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".LoginActivity"
-    android:background="@drawable/bg">
+    android:background="@drawable/bg"
+    tools:ignore="RtlCompat" >
 
     <include android:id="@+id/loading" layout="@layout/loading" android:visibility="gone"/>
 

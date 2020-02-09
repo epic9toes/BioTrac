@@ -25,6 +25,10 @@ android {
         sourceCompatibility = 1.8
         targetCompatibility = 1.8
     }
+    // build.gradle or build.gradle.kts
+    apollo {
+        generateKotlinModels.set(false) // or false for Java models
+    }
 }
 
 dependencies {

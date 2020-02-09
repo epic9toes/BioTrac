@@ -1,0 +1,80 @@
+
+query GetLecturers{
+  GetLecturers{
+    docs {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+    }
+  }
+}
+
+
+mutation Login($email: String!, $password: String!){
+  Login(email: $email, password: $password){
+    message
+    doc {
+      id
+      name
+      email
+    }
+    token
+  }
+}
+
+
+query GetStudentByNo($id: String!){
+  GetStudentByNo(id: $id){
+     message
+    doc {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+      level
+    }
+  }
+}
+
+
+mutation UpdateLecturerBiometric($model: FingerUpdateModel!){
+  UpdateLecturerBiometric(model: $model){
+    doc {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+    }
+  }
+}
+
+
+mutation UpdateStudentBiometric($model: FingerUpdateModel!){
+  UpdateStudentBiometric(model: $model){
+    doc {
+      id
+      name
+      phone
+      email
+      fingerprint
+      image
+      reg_no
+      level
+    }
+  }
+}
+
+
+mutation UploadLecturerBiometricData($file: Upload!){
+  UploadLecturerBiometricData(file: $file){
+    status
+    message
+  }
+}
