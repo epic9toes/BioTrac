@@ -7,7 +7,8 @@
     android:orientation="vertical"
     android:layout_height="match_parent"
     android:background="@drawable/bg"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    tools:ignore="RtlCompat">
 
     <RelativeLayout
      android:id="@+id/top_section"

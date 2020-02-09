@@ -2,10 +2,11 @@ package com.lloydant.biotrac.presenters;
 
 import android.content.SharedPreferences;
 
-//import com.apollographql.apollo.api.Response;
-//import com.lloydant.biotrac.LoginMutation;
+import com.apollographql.apollo.api.Response;
+import com.lloydant.biotrac.LoginMutation;
 import com.lloydant.biotrac.Repositories.ILoginRepository;
-//import com.lloydant.biotrac.StudentLoginMutation;
+import com.lloydant.biotrac.StudentLoginMutation;
+import com.lloydant.biotrac.fragment.StudentFragment;
 import com.lloydant.biotrac.models.Admin;
 import com.lloydant.biotrac.models.Department;
 import com.lloydant.biotrac.models.Student;
@@ -38,35 +39,36 @@ public class LoginActivityPresenter {
      * @param password
      */
     public void LoginStudent(String username, String password) {
-//        mDisposable.add( mRepository.StudentLogin(username, password)
-//                .subscribeWith(new DisposableObserver<Response<StudentLoginMutation.Data>>(){
-//
-//            @Override
-//            public void onNext(Response<StudentLoginMutation.Data> dataResponse) {
-//                if (dataResponse.data() != null){
-//
-//              StudentLoginMutation.Doc doc = dataResponse.data().StudentLogin().doc();
-//              String token = dataResponse.data().StudentLogin().token();
-//              Department department = new Department(doc.department().id(),doc.department().name());
-//              Student student = new Student(doc.id(),doc.name(),doc.phone(),doc.email(),
-//                      doc.fingerprint(),doc.image(),doc.reg_no(),doc.level(),department,token);
-//                    mView.OnStudentLoginSuccess(student);
-//                    StudentCredentials(student);
-//                } else {
-//                    mView.OnLoginFailure();
-//                }
-//            }
-//
-//            @Override
-//            public void onError(Throwable e) {
-//                mView.OnLoginError(e);
-//            }
-//
-//            @Override
-//            public void onComplete() {
-//
-//            }
-//        }));
+        mDisposable.add( mRepository.StudentLogin(username, password)
+                .subscribeWith(new DisposableObserver<Response<StudentLoginMutation.Data>>(){
+
+            @Override
+            public void onNext(Response<StudentLoginMutation.Data> dataResponse) {
+                if (dataResponse.data() != null){
+
+              StudentFragment doc = dataResponse.data().StudentLogin().doc().fragments().studentFragment();
+              String token = dataResponse.data().StudentLogin().token();
+              Department department = new Department(doc.department().fragments().departmentFragment().id(),
+                      doc.department().fragments().departmentFragment().name());
+              Student student = new Student(doc.id(),doc.name(),doc.phone(),doc.email(),
+                      doc.fingerprint(),doc.image(),doc.reg_no(),doc.level(),department,token);
+                    mView.OnStudentLoginSuccess(student);
+                    StudentCredentials(student);
+                } else {
+                    mView.OnLoginFailure();
+                }
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                mView.OnLoginError(e);
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        }));
     }
 
 
@@ -78,34 +80,34 @@ public class LoginActivityPresenter {
      * @param password
      */
     public void LoginAdmin(String email, String password){
-//    mDisposable.add(mRepository.AdminLogin(email,password)
-//            .subscribeWith(new DisposableObserver<Response<LoginMutation.Data>>() {
-//
-//        @Override
-//        public void onNext(Response<LoginMutation.Data> dataResponse) {
-//            if (dataResponse.data() != null){
-//
-//              LoginMutation.Doc  doc = dataResponse.data().Login().doc();
-//              String token  =  dataResponse.data().Login().token();
-//              Admin admin = new Admin(doc.id(),doc.name(),doc.email(),token);
-//                mView.OnAdminLoginSuccess(admin);
-//                AdminCredentials(admin);
-//            }else {
-//                mView.OnLoginFailure();
-//            }
-//
-//        }
-//
-//        @Override
-//        public void onError(Throwable e) {
-//            mView.OnLoginError(e);
-//        }
-//
-//        @Override
-//        public void onComplete() {
-//
-//        }
-//    }));
+    mDisposable.add(mRepository.AdminLogin(email,password)
+            .subscribeWith(new DisposableObserver<Response<LoginMutation.Data>>() {
+
+        @Override
+        public void onNext(Response<LoginMutation.Data> dataResponse) {
+            if (dataResponse.data() != null){
+
+              LoginMutation.Doc  doc = dataResponse.data().Login().doc();
+              String token  =  dataResponse.data().Login().token();
+              Admin admin = new Admin(doc.id(),doc.name(),doc.email(),token);
+                mView.OnAdminLoginSuccess(admin);
+                AdminCredentials(admin);
+            }else {
+                mView.OnLoginFailure();
+            }
+
+        }
+
+        @Override
+        public void onError(Throwable e) {
+            mView.OnLoginError(e);
+        }
+
+        @Override
+        public void onComplete() {
+
+        }
+    }));
     }
 
 

@@ -1,0 +1,98 @@
+
+
+fragment DepartmentFragment on Department{
+ id
+ name
+}
+
+fragment StudentFragment on Student {
+        id
+        name
+        phone
+        email
+        fingerprint
+        image
+        reg_no
+        level
+        department{
+            ...DepartmentFragment
+          }
+}
+
+mutation StudentLogin($no: String!, $password: String!){
+  StudentLogin(no: $no, password: $password){
+    message
+    doc{
+    ...StudentFragment
+    }
+    token
+  }
+}
+
+query GetCoursemate{
+  GetCoursemate{
+    docs{
+     ...StudentFragment
+    }
+  }
+}
+
+
+query GetRegisteredCourses{
+    GetRegisteredCourses {
+      docs {
+        session {
+          id
+          semester
+          title
+        }
+        level
+        total
+        courses {
+          id
+          date
+          course {
+            id
+            title
+            code
+            credit_unit
+            semester
+            assgined_lecturers {
+              id
+              name
+              email
+              fingerprint
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+
+mutation UploadStudentBiometricData($file: Upload!){
+  UploadStudentBiometricData(file: $file){
+    status
+    message
+  }
+}
+
+mutation UploadAttendance($file: Upload! ){
+  UploadAttendance(file: $file){
+    status
+    message
+  }
+}
+
+query GetStudentsByDepartment($department: ID!, $level: Int!){
+  GetStudentsByDepartment(department: $department, level: $level){
+    docs{
+    ...StudentFragment
+    }
+  }
+}
+
+
+
+
