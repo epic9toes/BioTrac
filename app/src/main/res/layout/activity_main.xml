@@ -10,6 +10,8 @@
     tools:context=".MainActivity"
     tools:ignore="RtlCompat">
 
+    <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>
+
     <RelativeLayout
      android:id="@+id/top_section"
      android:layout_width="match_parent"
@@ -74,7 +76,6 @@
 
     <include android:id="@+id/admin_menu" layout="@layout/admin_menu"/>
     <include  android:id="@+id/student_menu" layout="@layout/student_menu"/>
-
 
     <LinearLayout
         android:layout_width="match_parent"

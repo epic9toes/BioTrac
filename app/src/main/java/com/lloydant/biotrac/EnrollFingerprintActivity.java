@@ -34,6 +34,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import static com.lloydant.biotrac.LecturerSearchActivity.LecturerActivity;
+import static com.lloydant.biotrac.StudentSearchActivity.StudentActivity;
 
 
 public class EnrollFingerprintActivity extends AppCompatActivity {
@@ -206,6 +207,9 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
         if (getIntent().getExtras().getString(LecturerActivity) != null){
             mUsernameTextView.setText("Hello " + getIntent().getExtras().getString("LecturerName"));
             UserID = getIntent().getExtras().getString("LecturerID");
+        } else if (getIntent().getExtras().getString(StudentActivity) != null){
+            mUsernameTextView.setText("Hello " + getIntent().getExtras().getString("StudentName"));
+            UserID = getIntent().getExtras().getString("StudentID");
         }
     }
 

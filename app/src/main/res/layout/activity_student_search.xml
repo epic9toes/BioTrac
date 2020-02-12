@@ -6,7 +6,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/backgroundColor"
-    tools:context=".StudentSearchActivity">
+    tools:context=".StudentSearchActivity"
+    tools:ignore="RtlCompat" >
+
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -35,32 +37,39 @@
             android:textSize="22sp"
             android:textStyle="normal"
             android:layout_marginBottom="40dp"
-            android:text="Student Fingerprint Enrollment"/>
+            android:text="Student Fingerprint Enrollment" />
 
-            <androidx.appcompat.widget.AppCompatEditText
-                android:id="@+id/editTextSearch"
-                android:layout_width="match_parent"
+        <EditText
+            android:id="@+id/editTextSearch"
+            android:layout_width="match_parent"
             android:layout_height="50dp"
             android:layout_below="@id/closeBtn"
-                android:hint="Enter Name or Reg No."
+            android:hint="Enter Name or Reg No."
             android:background="@drawable/rounded_white"
             android:layout_marginTop="20dp"
             android:layout_marginStart="15dp"
             android:layout_marginEnd="15dp"
             android:drawablePadding="5dp"
             android:focusable="true"
-                android:drawableStart="@drawable/ic_search"
-                android:clickable="true"
+            android:drawableStart="@drawable/ic_search"
+            android:clickable="true"
             android:layout_marginBottom="20dp"/>
 
 
     </RelativeLayout>
 
-   <androidx.recyclerview.widget.RecyclerView
-       android:id="@+id/recyclerView"
-       android:layout_width="match_parent"
-       android:layout_height="match_parent"
-       android:scrollbars="vertical"
-       tools:listitem="@layout/std_list_layout"></androidx.recyclerview.widget.RecyclerView>
+    <include
+        android:id="@+id/loading"
+        layout="@layout/loading"/>
+
+    <include android:id="@+id/notFound"
+        layout="@layout/not_found" android:visibility="gone"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/std_list_layout"></androidx.recyclerview.widget.RecyclerView>
 
 </androidx.appcompat.widget.LinearLayoutCompat>

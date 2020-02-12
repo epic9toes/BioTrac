@@ -83,3 +83,17 @@ mutation UploadLecturerBiometricData($file: Upload!){
     message
   }
 }
+
+
+query GetLecturerByNo($no: String!){
+  GetLecturerByNo(no: $no){
+    doc {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+    }
+  }
+}

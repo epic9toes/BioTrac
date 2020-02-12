@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.lloydant.biotrac.R;
+import com.lloydant.biotrac.models.Student;
 
 import java.util.ArrayList;
 
@@ -15,19 +16,19 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class StudentListAdapter extends RecyclerView.Adapter<StudentListAdapter.ViewHolder> {
 
-    private ArrayList<String> names;
-    private  ArrayList<String> department;
-    private ArrayList<String> regNos;
+    private ArrayList<Student> mStudents;
     private OnStudentListener mOnStudentListener;
 
 
-    public StudentListAdapter(ArrayList<String> names, ArrayList<String> department,
-                              ArrayList<String> regNos, OnStudentListener onStudentListener) {
-        this.names = names;
-        this.department = department;
-        this.regNos = regNos;
+    public StudentListAdapter(ArrayList<Student> students, OnStudentListener onStudentListener) {
+        this.mStudents = students;
         this.mOnStudentListener = onStudentListener;
 
+    }
+
+    public void filterList(ArrayList<Student> students) {
+        this.mStudents = students;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -40,15 +41,15 @@ public class StudentListAdapter extends RecyclerView.Adapter<StudentListAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.username.setText(names.get(position));
-        holder.department.setText(department.get(position));
-        holder.regNo.setText(regNos.get(position));
-        holder.userImg.setImageResource(R.drawable.profile_img);
+        holder.username.setText(mStudents.get(position).getName());
+        holder.department.setText(mStudents.get(position).getDepartment().getName());
+        holder.regNo.setText(mStudents.get(position).getReg_no());
+        holder.userImg.setImageResource(R.drawable.avatar);
     }
 
     @Override
     public int getItemCount() {
-        return names.size();
+        return mStudents.size();
     }
 
 
