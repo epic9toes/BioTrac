@@ -199,6 +199,9 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
     public void CheckIncomingActivity(){
         if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null){
             username.setText("Hello " + getIntent().getExtras().getString("StudentName"));
+            UserID = getIntent().getExtras().getString("StudentID");
+        } else if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null) {
+            username.setText("Hello " + getIntent().getExtras().getString("LecturerName"));
             UserID = getIntent().getExtras().getString("LecturerID");
         }
     }

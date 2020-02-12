@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -68,6 +69,7 @@ public class StudentBioUpdateActivity extends AppCompatActivity implements Stude
         mPresenter = new StudentBioUpdateActivityPresenter(this,new StudentBioUpdateRepo());
 
         btnSearch.setOnClickListener(view -> {
+            editTextSearch.onEditorAction(EditorInfo.IME_ACTION_DONE);
             mPresenter.FindStudent(editTextSearch.getText().toString(), token);
             mLoaderView.setVisibility(View.VISIBLE);
             notFoundPanel.setVisibility(View.GONE);

@@ -4,8 +4,9 @@ import com.lloydant.biotrac.models.Student;
 
 import java.util.ArrayList;
 
-public interface MainActivityView {
-    void OnGetCourseMates(ArrayList<Student> studentArrayList);
-    void OnGetEmptyCourseMates();
+public interface StudentSearchActivityView {
+
+    void OnGetStudents(ArrayList<Student> studentArrayList);
+    void OnGetEmptyStudentList();
     void OnFailure(Throwable e);
 }

@@ -9,8 +9,10 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lloydant.biotrac.Repositories.implementations.LoginRepo;
+import com.lloydant.biotrac.helpers.StorageHelper;
 import com.lloydant.biotrac.models.Admin;
 import com.lloydant.biotrac.models.Student;
 import com.lloydant.biotrac.presenters.LoginActivityPresenter;
@@ -28,6 +30,8 @@ public class LoginActivity extends AppCompatActivity implements LoginActivityVie
     private TextView mErrorMsg;
     private SharedPreferences mPreferences;
     public static final String USER_PREF = "com.lloydant.attendance.logged_in_user";
+
+    StorageHelper mStorageHelper;
 
 
 
@@ -48,6 +52,7 @@ public class LoginActivity extends AppCompatActivity implements LoginActivityVie
 
         mPresenter = new LoginActivityPresenter(this, new LoginRepo(), mPreferences);
 
+        mStorageHelper = new StorageHelper(this);
 
         mLoginBtn.setOnClickListener(view -> {
             if (mCheckBox.isChecked()) {
@@ -67,6 +72,7 @@ public class LoginActivity extends AppCompatActivity implements LoginActivityVie
     @Override
     public void OnStudentLoginSuccess(Student student) {
         LoggedInSuccess(false);
+        mStorageHelper.createUserFolder(student.getId());
     }
 
     @Override
