@@ -13,7 +13,6 @@ import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
@@ -27,10 +26,7 @@ import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
 import com.fgtit.utils.DBHelper;
 
-import java.io.File;
-
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 
 import static com.lloydant.biotrac.LecturerSearchActivity.LecturerActivity;

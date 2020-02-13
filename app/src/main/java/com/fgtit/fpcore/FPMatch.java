@@ -1,6 +1,7 @@
 package com.fgtit.fpcore;
 
 import com.fgtit.data.Conversions;
+import com.fgtit.data.ConversionsEx;
 
 /**
  * The class for fingerprint matching
@@ -61,9 +62,9 @@ public class FPMatch {
      * @return the match score
      */
     public int MatchFingerData(byte[] piFeatureA, byte[] piFeatureB) {
-        int at = Conversions.getInstance().GetDataType(piFeatureA);
-        int bt = Conversions.getInstance().GetDataType(piFeatureB);
-        if ((at == 1) && (bt == 1)) {
+        int at = ConversionsEx.getInstance().GetDataType(piFeatureA);
+        int bt = ConversionsEx.getInstance().GetDataType(piFeatureB);
+        if ((at == 0) && (bt == 0)) {
             if (piFeatureA.length >= 512) {
                 byte tmp[] = new byte[256];
                 System.arraycopy(piFeatureA, 0, tmp, 0, 256);
@@ -80,8 +81,9 @@ public class FPMatch {
         } else {
             byte adat[] = new byte[512];
             byte bdat[] = new byte[512];
-            ToStd(piFeatureA, adat);
-            ToStd(piFeatureB, bdat);
+            ConversionsEx.getInstance().AnsiIsoToStd(piFeatureA, adat, ConversionsEx.ISO_19794_2005);
+            ConversionsEx.getInstance().AnsiIsoToStd(piFeatureB, bdat, ConversionsEx.ISO_19794_2005);
+
             return MatchTemplate(adat, bdat);
         }
     }

@@ -87,9 +87,9 @@
             android:text="Hello!"
             android:lines="1"
             android:ems="6"
+            android:ellipsize="end"
             android:layout_marginRight="10dp"
             android:layout_marginLeft="10dp"
-            android:ellipsize="end"
             android:textSize="35sp"
             android:textAlignment="center"
             android:textColor="@color/whiteColor"/>
