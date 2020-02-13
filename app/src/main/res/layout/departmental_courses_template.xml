@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView android:id="@+id/card_view"
+<androidx.cardview.widget.CardView xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_view"
     card_view:cardElevation="5dp"
     android:layout_marginLeft="10dp"
     android:layout_marginRight="10dp"
@@ -8,6 +9,7 @@
     android:layout_marginBottom="5dp"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    tools:ignore="RtlCompat"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto">
 
@@ -46,6 +48,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Use of English"
+                android:lines="1"
+                android:ems="6"
+                android:ellipsize="end"
                 android:textSize="18sp"
                 android:paddingLeft="10dp"
                 android:textColor="@color/primaryText"
@@ -56,7 +61,7 @@
                 android:layout_marginBottom="5dp"/>
 
             <TextView
-                android:id="@+id/txtLevel"
+                android:id="@+id/txtCreditUnit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="300 level"
@@ -74,7 +79,7 @@
                 android:textSize="14sp"
                 android:paddingLeft="10dp"
                 android:textColor="@color/primaryText"
-                android:layout_below="@id/txtLevel"
+                android:layout_below="@id/txtCreditUnit"
                 android:letterSpacing="0.1"/>
 
             <ImageView
@@ -83,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:src="@drawable/homework"
-                android:layout_alignParentEnd="true"/>
+                android:layout_alignParentEnd="true" />
 
         </RelativeLayout>
 

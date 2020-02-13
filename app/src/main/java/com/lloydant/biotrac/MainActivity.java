@@ -16,7 +16,9 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.lloydant.biotrac.Repositories.implementations.MainActivityRepo;
+import com.lloydant.biotrac.helpers.NetworkCheck;
 import com.lloydant.biotrac.helpers.StorageHelper;
+import com.lloydant.biotrac.models.DepartmentalCourse;
 import com.lloydant.biotrac.models.Student;
 import com.lloydant.biotrac.presenters.MainActivityPresenter;
 import com.lloydant.biotrac.views.MainActivityView;
@@ -49,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
 
     private MainActivityPresenter mPresenter;
     private StorageHelper mStorageHelper;
+    private NetworkCheck mNetworkCheck;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         mBTDeviceDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
 
-
+        mNetworkCheck = new NetworkCheck(this);
         mPresenter = new MainActivityPresenter(this, new MainActivityRepo());
         mStorageHelper = new StorageHelper(this);
 
@@ -91,8 +94,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
             mStudentMenu.setVisibility(View.GONE);
         } else {
             mAdminMenu.setVisibility(View.GONE);
-            mPresenter.GetCourseMates(token);
-            mLoaderView.setVisibility(View.VISIBLE);
+            if (mNetworkCheck.isNetworkAvailable()){
+
+                mPresenter.GetCourseMates(token);
+                mPresenter.GetRegisteredCourses(token);
+                mLoaderView.setVisibility(View.VISIBLE);
+            }else {
+                mLoaderView.setVisibility(View.GONE);
+                Toast.makeText(this, "Network not found", Toast.LENGTH_SHORT).show();
+            }
+
         }
 
     }
@@ -133,13 +144,29 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         String jsonString = new Gson().toJson(studentArrayList);
         mLoaderView.setVisibility(View.GONE);
         Toast.makeText(this, mStorageHelper.saveJsonFile("CourseMates",jsonString,studentID), Toast.LENGTH_SHORT).show();
-//        mStorageHelper.readJsonFile(studentID,"CourseMates.json");
+
     }
 
     @Override
     public void OnGetEmptyCourseMates() {
         mLoaderView.setVisibility(View.GONE);
         Toast.makeText(this, "No Course Mates Found!", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void OnGetRegisteredCourses(ArrayList<DepartmentalCourse> departmentalCourses) {
+        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
+        String studentID = mPreferences.getString("id", "Student ID");
+        String jsonString = new Gson().toJson(departmentalCourses);
+        mLoaderView.setVisibility(View.GONE);
+        Toast.makeText(this, mStorageHelper.saveJsonFile("RegisteredCourses",jsonString,studentID), Toast.LENGTH_SHORT).show();
+//        mStorageHelper.readJsonFile(studentID,"RegisteredCourses.json");
+    }
+
+    @Override
+    public void OnGetEmptyRegisteredCourses() {
+        mLoaderView.setVisibility(View.GONE);
+        Toast.makeText(this, "No Registered Courses Found!", Toast.LENGTH_LONG).show();
     }
 
     @Override

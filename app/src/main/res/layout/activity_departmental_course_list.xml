@@ -41,6 +41,8 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/CoursesPanel"
         android:layout_weight="2.5"
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -53,7 +55,7 @@
             android:layout_marginLeft="25dp"
             android:layout_marginRight="10dp"
             android:layout_width="match_parent"
-            android:hint="Filter Courses"
+            android:hint="Filter by Course Code"
             android:layout_height="45dp"
             android:drawableLeft="@drawable/ic_search"
             android:paddingLeft="10dp"
@@ -69,6 +71,50 @@
             android:layout_marginRight="20dp"
             tools:listitem="@layout/departmental_courses_template"/>
 
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/searchBtPanel"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@color/backgroundColor">
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="40dp"
+            android:src="@drawable/sad"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Bluetooth is disconnected"
+            android:textSize="15sp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:textAlignment="center"
+            android:textColor="@color/primaryText"
+            android:textStyle="normal"/>
+        <Button
+            android:id="@+id/searchBT"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:text="Search Bluetooth"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawableStart="@drawable/ic_fingerprint"
+            android:drawablePadding="10dp"
+            android:paddingLeft="75dp"
+            android:paddingRight="85dp"
+            android:layout_gravity="center"
+            android:drawableLeft="@drawable/ic_fingerprint" />
     </LinearLayout>
 
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -6,7 +6,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.lloydant.biotrac.R;
-import com.lloydant.biotrac.models.DepartmentalCourses;
+import com.lloydant.biotrac.models.Course;
+import com.lloydant.biotrac.models.DepartmentalCourse;
 
 import java.util.ArrayList;
 
@@ -15,10 +16,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class DeptCourseAdapter extends RecyclerView.Adapter<DeptCourseAdapter.ViewHolder> {
 
-    private ArrayList<DepartmentalCourses> mDepartmentalCoursesArrayList;
+    private ArrayList<Course> mDepartmentalCoursesArrayList;
     private OnDepartmentalCourseListener mOnDepartmentalCourseListener;
 
-    public DeptCourseAdapter(ArrayList<DepartmentalCourses> departmentalCoursesArrayList,
+    public DeptCourseAdapter(ArrayList<Course> departmentalCoursesArrayList,
                              OnDepartmentalCourseListener onDepartmentalCourseListener) {
         this.mDepartmentalCoursesArrayList = departmentalCoursesArrayList;
         this.mOnDepartmentalCourseListener = onDepartmentalCourseListener;
@@ -35,7 +36,7 @@ public class DeptCourseAdapter extends RecyclerView.Adapter<DeptCourseAdapter.Vi
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             holder.txtCode.setText(mDepartmentalCoursesArrayList.get(position).getCode());
-            holder.txtLevel.setText(mDepartmentalCoursesArrayList.get(position).getLevel());
+            holder.txtCreditUnit.setText("Credit Unit: " + mDepartmentalCoursesArrayList.get(position).getCredit_unit());
             holder.txtSemester.setText(mDepartmentalCoursesArrayList.get(position).getSemester());
             holder.txtTitle.setText(mDepartmentalCoursesArrayList.get(position).getTitle());
     }
@@ -46,17 +47,21 @@ public class DeptCourseAdapter extends RecyclerView.Adapter<DeptCourseAdapter.Vi
         return mDepartmentalCoursesArrayList.size();
     }
 
+    public void filterList(ArrayList<Course> courses) {
+        this.mDepartmentalCoursesArrayList = courses;
+        notifyDataSetChanged();
+    }
 
     public class ViewHolder extends  RecyclerView.ViewHolder implements View.OnClickListener{
 
         OnDepartmentalCourseListener mOnDepartmentalCourseListener;
-        TextView txtCode, txtTitle, txtLevel, txtSemester;
+        TextView txtCode, txtTitle, txtCreditUnit, txtSemester;
 
         public ViewHolder(@NonNull View itemView, OnDepartmentalCourseListener onDepartmentalCourseListener) {
             super(itemView);
             txtCode = itemView.findViewById(R.id.txtCode);
             txtTitle = itemView.findViewById(R.id.txtTitle);
-            txtLevel = itemView.findViewById(R.id.txtLevel);
+            txtCreditUnit = itemView.findViewById(R.id.txtCreditUnit);
             txtSemester = itemView.findViewById(R.id.txtSemester);
 
             this.mOnDepartmentalCourseListener = onDepartmentalCourseListener;

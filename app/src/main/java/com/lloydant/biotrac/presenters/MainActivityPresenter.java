@@ -2,9 +2,14 @@ package com.lloydant.biotrac.presenters;
 
 import com.apollographql.apollo.api.Response;
 import com.lloydant.biotrac.GetCoursemateQuery;
+import com.lloydant.biotrac.GetRegisteredCoursesQuery;
 import com.lloydant.biotrac.Repositories.implementations.MainActivityRepo;
 import com.lloydant.biotrac.fragment.StudentFragment;
+import com.lloydant.biotrac.models.Course;
 import com.lloydant.biotrac.models.Department;
+import com.lloydant.biotrac.models.DepartmentalCourse;
+import com.lloydant.biotrac.models.Lecturer;
+import com.lloydant.biotrac.models.Session;
 import com.lloydant.biotrac.models.Student;
 import com.lloydant.biotrac.views.MainActivityView;
 
@@ -24,10 +29,6 @@ public class MainActivityPresenter {
     public MainActivityPresenter(MainActivityView view, MainActivityRepo repo) {
         mView = view;
         mRepo = repo;
-    }
-
-    public MainActivityPresenter(MainActivityView view) {
-        mView = view;
     }
 
     public void GetCourseMates(String token){
@@ -61,6 +62,65 @@ public class MainActivityPresenter {
 
                     }
                 }));
+    }
+
+    public void GetRegisteredCourses(String token){
+        mDisposable.add(mRepo.GetRegisteredCourses(token).subscribeWith(
+                new DisposableObserver<Response<GetRegisteredCoursesQuery.Data>>() {
+            @Override
+            public void onNext(Response<GetRegisteredCoursesQuery.Data> dataResponse) {
+                // course list
+                ArrayList<Course> _courses = new ArrayList<>();
+                //session object
+                Session session = null;
+
+                // total registered course
+                int total = 0;
+            // student level
+                int level = 0;
+            if (dataResponse.data().GetRegisteredCourses().docs() != null){
+                List<GetRegisteredCoursesQuery.Doc> docList = dataResponse.data().GetRegisteredCourses().docs();
+                ArrayList<DepartmentalCourse> departmentalCourses = new ArrayList<>();
+
+                for (GetRegisteredCoursesQuery.Doc course : docList){
+                    // build session object
+                    session = new Session(course.session().id(),course.session().semester(), course.session().title());
+                    // get total value
+                    total = course.total();
+                    // get level value
+                    level = course.level();
+                    _courses = new ArrayList<>();
+                    for (GetRegisteredCoursesQuery.Course course1 : course.courses()){
+
+
+                        ArrayList<Lecturer> lecturerArrayList = new ArrayList<>();
+                        for (GetRegisteredCoursesQuery.Assgined_lecturer lecturer : course1.course().assgined_lecturers()){
+
+                           lecturerArrayList.add(new Lecturer(lecturer.id(),lecturer.name(),null,
+                                   lecturer.email(),lecturer.fingerprint()));
+                       }
+                        _courses.add(new Course(course1.course().id(),course1.course().title(),
+                                course1.course().code(),course1.course().credit_unit(),course1.course().semester(),
+                                lecturerArrayList));
+
+                    }
+                }
+                departmentalCourses.add(new DepartmentalCourse(session, _courses,total,level)
+                           );
+                mView.OnGetRegisteredCourses(departmentalCourses);
+            }else mView.OnGetEmptyRegisteredCourses();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+            mView.OnFailure(e);
+            }
+
+            @Override
+            public void onComplete() {
+
+            }
+        }));
     }
 
 }
