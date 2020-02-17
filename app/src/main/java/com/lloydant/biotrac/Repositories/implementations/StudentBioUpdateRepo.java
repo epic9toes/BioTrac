@@ -6,7 +6,7 @@ import com.apollographql.apollo.rx2.Rx2Apollo;
 import com.lloydant.biotrac.ApolloConnector;
 import com.lloydant.biotrac.GetStudentByNoQuery;
 import com.lloydant.biotrac.Repositories.IStudentBioUpdateRepository;
-import com.lloydant.biotrac.UpdateStudentBiometricMutation;
+//import com.lloydant.biotrac.UpdateStudentBiometricMutation;
 
 import java.io.File;
 
@@ -15,10 +15,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class StudentBioUpdateRepo implements IStudentBioUpdateRepository {
-    @Override
-    public Observable<Response<UpdateStudentBiometricMutation.Data>> UpdateStudentFingerprint(File file) {
-        return null;
-    }
+//    @Override
+//    public Observable<Response<UpdateStudentBiometricMutation.Data>> UpdateStudentFingerprint(File file) {
+//        return null;
+//    }
 
     @Override
     public Observable<Response<GetStudentByNoQuery.Data>> FindStudentByRegNo(String regno, String token) {

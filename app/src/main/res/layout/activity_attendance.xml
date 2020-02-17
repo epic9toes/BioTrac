@@ -8,7 +8,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context=".EnrollFingerprintActivity"
-    android:background="@color/whiteColor">
+    android:background="@color/whiteColor"
+    tools:ignore="RtlCompat">
     <RelativeLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -40,7 +41,7 @@
                         android:id="@+id/userImg"
                         android:layout_width="95dp"
                         android:layout_height="95dp"
-                        android:src="@drawable/lecturer"
+                        android:src="@drawable/avatar"
                         android:focusableInTouchMode="false"
                         android:scaleType="centerCrop"/>
 
@@ -254,7 +255,7 @@
                         android:id="@+id/stdUserImg"
                         android:layout_width="80dp"
                         android:layout_height="80dp"
-                        android:src="@drawable/profile_img"
+                        android:src="@drawable/avatar"
                         android:focusableInTouchMode="false"
                         android:scaleType="centerCrop"/>
 
@@ -308,7 +309,7 @@
                     android:layout_alignParentEnd="true"
                     android:layout_below="@id/stdUsername"
                     android:paddingRight="20dp"
-                    android:src="@drawable/ic_check_circle_outline"/>
+                    android:src="@drawable/ic_check_circle_outline" />
             </RelativeLayout>
 
         </androidx.cardview.widget.CardView>

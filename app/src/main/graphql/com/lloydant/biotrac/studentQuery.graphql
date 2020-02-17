@@ -93,6 +93,25 @@ query GetStudentsByDepartment($department: ID!, $level: Int!){
   }
 }
 
+query GetDepartmentalStudentForEnrollment($department: ID!, $level: Int!){
+  GetDepartmentalStudentForEnrollment(department: $department, level: $level){
+    docs {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+      level
+      image
+      department {
+              id
+              name
+            }
+    }
+  }
+}
+
 
 
 

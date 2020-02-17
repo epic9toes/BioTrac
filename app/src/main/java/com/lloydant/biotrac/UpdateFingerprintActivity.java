@@ -6,8 +6,8 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -26,6 +26,9 @@ import android.widget.Toast;
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
 import com.fgtit.utils.DBHelper;
+import com.lloydant.biotrac.Repositories.implementations.UpdateFingerprintRepo;
+import com.lloydant.biotrac.presenters.UpdateFingerprintActivityPresenter;
+import com.lloydant.biotrac.views.UpdateFingerprintView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -41,19 +44,16 @@ import static com.lloydant.biotrac.EnrollFingerprintActivity.IMG288;
 import static com.lloydant.biotrac.EnrollFingerprintActivity.IMG360;
 import static com.lloydant.biotrac.EnrollFingerprintActivity.MESSAGE_DEVICE_NAME;
 
-public class UpdateFingerprintActivity extends AppCompatActivity {
+public class UpdateFingerprintActivity extends AppCompatActivity implements UpdateFingerprintView {
 
     Dialog mSuccessDialog, mErrorDialog;
     ImageView backBtn;
     TextView username;
 
     private TextView DeviceName;
-    private Button ConnectBluetoothBtn,  onUpdateSucess, onUpdateError;;
+    private Button ConnectBluetoothBtn,  onUpdateSucess, onUpdateError, cancelBtn;
 
-    private View StartPanel, BTSearchPanel, deviceInfoPanel;
-
-    private int userId; // User ID number
-    private SQLiteDatabase userDB; //SQLite database object
+    private View StartPanel, BTSearchPanel, deviceInfoPanel, loadingPanel;
 
     // Name of the connected device
     private String mConnectedDeviceName = null;
@@ -74,8 +74,6 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
     private static String[] PERMISSIONS_STORAGE = {Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
-
-    private String UserID;
 
     // Intent request codes
     private static final int REQUEST_CONNECT_DEVICE = 1;
@@ -101,6 +99,15 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
     public byte mRefData[] = new byte[512]; //enrolled FP template data
     public int mRefSize = 0;
 
+    UpdateFingerprintActivityPresenter mPresenter;
+    private String token;
+    public static final String USER_PREF = "com.lloydant.attendance.logged_in_user";
+    private SharedPreferences mPreferences;
+
+//    UpdateFingerModel Objects
+    private String UserId, reason, prevFinger, newFinger, template;
+
+    private TextView errorMsg;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,9 +115,34 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
         setContentView(R.layout.activity_update_fingerprint);
 
         mSuccessDialog = new Dialog(this);
+        mSuccessDialog.setContentView(R.layout.update_success_dialog);
+        mSuccessDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mSuccessDialog.setCanceledOnTouchOutside(false);
+        onUpdateSucess = mSuccessDialog.findViewById(R.id.doneBtn);
+        onUpdateSucess.setOnClickListener(view -> {
+            mSuccessDialog.dismiss();
+            finish();
+        });
+
+
         mErrorDialog = new Dialog(this);
+        mErrorDialog.setContentView(R.layout.update_error_dialog);
+        mErrorDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        mErrorDialog.setCanceledOnTouchOutside(false);
+        cancelBtn = mErrorDialog.findViewById(R.id.cancelBtn);
+        errorMsg = mErrorDialog.findViewById(R.id.errorMsg);
+        onUpdateError = mErrorDialog.findViewById(R.id.errorBtn);
+        onUpdateError.setOnClickListener(view -> {
+            loadingPanel.setVisibility(View.GONE);
+            StartPanel.setVisibility(View.VISIBLE);
+            mErrorDialog.dismiss();
+            SendCommand(CMD_ENROLHOST, null, 0);
+        });
+        cancelBtn.setOnClickListener(view -> finish());
+
         backBtn = findViewById(R.id.backBtn);
         username = findViewById(R.id.username);
+        loadingPanel = findViewById(R.id.loadingPanel);
 
         DeviceName = findViewById(R.id.deviceName);
         ConnectBluetoothBtn = findViewById(R.id.searchBT);
@@ -118,6 +150,9 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
         BTSearchPanel = findViewById(R.id.searchBtPanel);
         deviceInfoPanel = findViewById(R.id.deviceInfoPanel);
 
+        mPresenter = new UpdateFingerprintActivityPresenter(new UpdateFingerprintRepo(),this);
+        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
+        token = mPreferences.getString("token", "Empty Token");
 
 
         ConnectBluetoothBtn.setOnClickListener(view -> {
@@ -159,52 +194,25 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
 
-        //initialize the SQLite
-        userId = 1;
-        DBHelper userDBHelper = new DBHelper(this);
-        userDB = userDBHelper.getWritableDatabase();
 
-        CheckIncomingActivity();
-    }
+//        Prepare FingerUpdateModel objects to be sent to the Database
+        reason = getIntent().getExtras().getString("reason", "reason for update");
+        newFinger = getIntent().getExtras().getString("newFinger", "New finger");
+        prevFinger = getIntent().getExtras().getString("prevFinger", "Old Finger");
+        username.setText("Hello " + getIntent().getExtras().getString("Name"));
 
-    private void ShowSuccessDialog() {
-        mSuccessDialog.setContentView(R.layout.update_success_dialog);
-        mSuccessDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mSuccessDialog.setCanceledOnTouchOutside(false);
-
-        onUpdateSucess = mSuccessDialog.findViewById(R.id.doneBtn);
-        onUpdateSucess.setOnClickListener(view -> {
-            mSuccessDialog.dismiss();
-            finish();
-        });
-
-        mSuccessDialog.show();
-    }
-
-    private void ShowErrorDialog() {
-        mErrorDialog.setContentView(R.layout.update_error_dialog);
-        mErrorDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mErrorDialog.setCanceledOnTouchOutside(false);
-
-        onUpdateError = mErrorDialog.findViewById(R.id.errorBtn);
-        onUpdateError.setOnClickListener(view -> {
-            mErrorDialog.dismiss();
-            SendCommand(CMD_ENROLHOST, null, 0);
-        });
-
-        mErrorDialog.show();
-    }
-
-
-    public void CheckIncomingActivity(){
+//        Check the incoming activity and set user id
         if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null){
-            username.setText("Hello " + getIntent().getExtras().getString("StudentName"));
-            UserID = getIntent().getExtras().getString("StudentID");
-        } else if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null) {
-            username.setText("Hello " + getIntent().getExtras().getString("LecturerName"));
-            UserID = getIntent().getExtras().getString("LecturerID");
-        }
+            UserId = getIntent().getExtras().getString("student", "User ID");
+        } else if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null){
+            UserId = getIntent().getExtras().getString("lecturerId", "User ID");
+           }
+
     }
+
+
+
+
 
     @Override
     public void onStart() {
@@ -256,11 +264,6 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
 
         switch (sendbuf[4]) {
             case CMD_ENROLHOST:
-//                AddStatusList("Enrol Template ...");
-                break;
-            case CMD_GETIMAGE:
-//                mUpImageSize = 0;
-//                AddStatusList("Get Fingerprint Image ...");
                 break;
         }
     }
@@ -338,6 +341,7 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
         super.onDestroy();
         // Stop the Bluetooth chat services
         if (mChatService != null) mChatService.stop();
+        mPresenter.DestroyDisposables();
     }
 
 
@@ -388,16 +392,26 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
                                 sdkUniversalEndPoints.memcpy(mRefData, 0, mCmdData, 8, size);
                                 mRefSize = size;
 
-                                //save into database
-                                ContentValues values = new ContentValues();
-                                values.put(DBHelper.TABLE_USER_ENROL1, mRefData);
-                                userDB.insert(DBHelper.TABLE_USER, null, values);
-                                Toast.makeText(this, "Enroll Succeed with finger: " + userId, Toast.LENGTH_SHORT).show();
-                                userId += 1;
-                                ShowSuccessDialog();
-                                mErrorDialog.dismiss();
+                        //      Encode the byte[] to string base64
+                                template = android.util.Base64.encodeToString(mRefData, android.util.Base64.DEFAULT);
+
+//                                Send to database through graphQl
+                                if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null){
+
+                                    //   finally, uploading it to the server
+                                mPresenter.UpdateStudentFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,template,token);
+                                } else if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null){
+
+                            //   finally, uploading it to the server
+                             mPresenter.UpdateLecturerFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,template,token);
+                                }
+
+                                loadingPanel.setVisibility(View.VISIBLE);
+                                StartPanel.setVisibility(View.GONE);
+
+
                             } else
-                                ShowErrorDialog();
+                                mErrorDialog.show();
                         }
                         break;
                     }
@@ -443,5 +457,35 @@ public class UpdateFingerprintActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         super.onStop();
+    }
+
+
+
+    @Override
+    public void OnLecturerFingerprintUpdate(String message) {
+        loadingPanel.setVisibility(View.GONE);
+        mSuccessDialog.show();
+        mErrorDialog.dismiss();
+    }
+
+    @Override
+    public void OnStudentFingerprintUpdate(String message) {
+        loadingPanel.setVisibility(View.GONE);
+        mSuccessDialog.show();
+        mErrorDialog.dismiss();
+    }
+
+    @Override
+    public void OnFingerprintUpdateFailed() {
+        errorMsg.setText("Fingerprint Upload not successful!");
+        loadingPanel.setVisibility(View.GONE);
+        mErrorDialog.show();
+    }
+
+    @Override
+    public void OnFingerprintUpdateError(Throwable e) {
+        errorMsg.setText("Error: " + e.getMessage());
+        loadingPanel.setVisibility(View.GONE);
+        mErrorDialog.show();
     }
 }

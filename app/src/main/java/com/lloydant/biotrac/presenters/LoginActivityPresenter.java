@@ -128,6 +128,7 @@ public class LoginActivityPresenter {
         editor.putString("token", student.getToken());
         editor.putString("dept_id", student.getDepartment().getId());
         editor.putString("dept_name", student.getDepartment().getName());
+        editor.putString("isAdmin", "No");
         editor.apply();
 
     }
@@ -142,6 +143,7 @@ public class LoginActivityPresenter {
         editor.putString("name", admin.getName());
         editor.putString("email", admin.getEmail());
         editor.putString("token", admin.getToken());
+        editor.putString("isAdmin", "Yes");
         editor.apply();
     }
 

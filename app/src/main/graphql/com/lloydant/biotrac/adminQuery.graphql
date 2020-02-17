@@ -47,8 +47,11 @@ query GetStudentByNo($id: String!){
 }
 
 
-mutation UpdateLecturerBiometric($model: FingerUpdateModel!){
-  UpdateLecturerBiometric(model: $model){
+
+mutation UpdateLecturerBiometric($reason: String!, $newFinger: Int!, $prevFinger: Int!, $lecturerId: ID!, $template: ID!){
+  UpdateLecturerBiometric(reason: $reason, newFinger: $newFinger, prevFinger: $prevFinger, lecturerId: $lecturerId, template: $template){
+    status
+    message
     doc {
       id
       name
@@ -61,8 +64,10 @@ mutation UpdateLecturerBiometric($model: FingerUpdateModel!){
 }
 
 
-mutation UpdateStudentBiometric($model: FingerUpdateModel!){
-  UpdateStudentBiometric(model: $model){
+mutation  UpdateStudentBiometric($reason: String!, $newFinger: Int!, $prevFinger: Int!, $student: ID!, $template: ID!){
+  UpdateStudentBiometric(reason: $reason, newFinger: $newFinger, prevFinger: $prevFinger, student: $student, template: $template){
+    status
+    message
     doc {
       id
       name
@@ -77,6 +82,37 @@ mutation UpdateStudentBiometric($model: FingerUpdateModel!){
 }
 
 
+
+mutation UpdateSingleLecturerBiometric($id: ID!, $template: String!){
+  UpdateSingleLecturerBiometric(id: $id, template: $template){
+    message
+    doc {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+    }
+  }
+}
+
+
+mutation UpdateSingleStudentBiometric($id: ID!, $template: String!){
+  UpdateSingleStudentBiometric(id: $id, template: $template){
+    message
+    doc {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+      level
+    }
+  }
+}
+
 mutation UploadLecturerBiometricData($file: Upload!){
   UploadLecturerBiometricData(file: $file){
     status
@@ -88,6 +124,19 @@ mutation UploadLecturerBiometricData($file: Upload!){
 query GetLecturerByNo($no: String!){
   GetLecturerByNo(no: $no){
     doc {
+      id
+      name
+      phone
+      email
+      fingerprint
+      reg_no
+    }
+  }
+}
+
+query GetLecturersForEnrollment{
+  GetLecturersForEnrollment{
+    docs {
       id
       name
       phone

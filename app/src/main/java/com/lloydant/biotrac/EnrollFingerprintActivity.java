@@ -7,10 +7,9 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,27 +23,24 @@ import android.widget.Toast;
 
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
-import com.fgtit.utils.DBHelper;
+import com.lloydant.biotrac.Repositories.implementations.EnrollFingerprintRepo;
+import com.lloydant.biotrac.presenters.EnrollFingerprintPresenter;
+import com.lloydant.biotrac.views.EnrollFingerprintActivityView;
+
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import static com.lloydant.biotrac.LecturerSearchActivity.LecturerActivity;
+import static com.lloydant.biotrac.LoginActivity.USER_PREF;
 import static com.lloydant.biotrac.StudentSearchActivity.StudentActivity;
 
 
-public class EnrollFingerprintActivity extends AppCompatActivity {
+public class EnrollFingerprintActivity extends AppCompatActivity implements EnrollFingerprintActivityView {
 
     // Debugging
-    //directory for saving the fingerprint images
-    private String sDirectory = "";
     public static final String TAG = "BluetoothReader";
 
-    //default image size
-    public static final int IMG_WIDTH = 256;
-    public static final int IMG_HEIGHT = 288;
-    public static final int IMG_SIZE = IMG_WIDTH * IMG_HEIGHT;
-    public static final int WSQBUFSIZE = 200000;
 
     //other image size
     public static final int IMG200 = 200;
@@ -100,8 +96,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
     private boolean mIsWork = false;
 
 
-    private int userId; // User ID number
-    private SQLiteDatabase userDB; //SQLite database object
 
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
@@ -112,13 +106,17 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
 
     private Dialog mEnrollmentSuccessfulDialog, mEnrollmentErrorDialog;
     private Button ConnectBluetoothBtn, onEnrollmentSucess, onEnrollmentError;
-    private TextView DeviceName;
+    private TextView DeviceName, errorMsg;
     private ImageView backBtn;
-    private View StartPanel, BTSearchPanel, deviceInfoPanel;
+    private View StartPanel, BTSearchPanel, deviceInfoPanel, loadingPanel;
     private TextView mUsernameTextView;
-    private String UserID;
+    private String name;
+    private String token;
+    private String lecturerID, studentID;
 
+    private SharedPreferences mPreferences;
     SDKUniversalEndPoints sdkUniversalEndPoints;
+    EnrollFingerprintPresenter mPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +128,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
         ConnectBluetoothBtn = findViewById(R.id.searchBT);
         StartPanel = findViewById(R.id.startPanel);
         BTSearchPanel = findViewById(R.id.searchBtPanel);
+        loadingPanel = findViewById(R.id.loadingPanel);
         deviceInfoPanel = findViewById(R.id.deviceInfoPanel);
         mUsernameTextView = findViewById(R.id.username);
 
@@ -146,8 +145,9 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
         mEnrollmentErrorDialog.setContentView(R.layout.enroll_error_dialog);
         mEnrollmentErrorDialog.setCanceledOnTouchOutside(false);
         onEnrollmentError = mEnrollmentErrorDialog.findViewById(R.id.errorBtn);
+        errorMsg = mEnrollmentErrorDialog.findViewById(R.id.errorMsg);
         onEnrollmentError.setOnClickListener(view -> {
-            mEnrollmentErrorDialog.dismiss();
+            StartPanel.setVisibility(View.VISIBLE);
             mEnrollmentErrorDialog.dismiss();
             SendCommand(CMD_ENROLHOST, null, 0);
 
@@ -174,7 +174,9 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         sdkUniversalEndPoints = new SDKUniversalEndPoints(mBluetoothAdapter, mChatService);
-        sdkUniversalEndPoints.CreateDirectory();
+
+        mPresenter = new EnrollFingerprintPresenter(new EnrollFingerprintRepo(), this);
+
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
@@ -190,24 +192,18 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
 
-        //initialize the SQLite
-        userId = 1;
-        DBHelper userDBHelper = new DBHelper(this);
-        userDB = userDBHelper.getWritableDatabase();
-
-        CheckIncomingActivity();
-    }
-
-
-    public void CheckIncomingActivity(){
+        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         if (getIntent().getExtras().getString(LecturerActivity) != null){
-            mUsernameTextView.setText("Hello " + getIntent().getExtras().getString("LecturerName"));
-            UserID = getIntent().getExtras().getString("LecturerID");
-        } else if (getIntent().getExtras().getString(StudentActivity) != null){
-            mUsernameTextView.setText("Hello " + getIntent().getExtras().getString("StudentName"));
-            UserID = getIntent().getExtras().getString("StudentID");
+            name = getIntent().getExtras().getString("LecturerName", "Lecturer Name");
+
+        }else if (getIntent().getExtras().getString(StudentActivity) != null){
+            name = getIntent().getExtras().getString("StudentName", "Student Name");
         }
+        token = mPreferences.getString("token", "Empty Token");
+        mUsernameTextView.setText("Hello " + name);
     }
+
+
 
     @Override
     public void onStart() {
@@ -259,11 +255,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
 
         switch (sendbuf[4]) {
             case CMD_ENROLHOST:
-//                AddStatusList("Enrol Template ...");
-                break;
-            case CMD_GETIMAGE:
-//                mUpImageSize = 0;
-//                AddStatusList("Get Fingerprint Image ...");
                 break;
         }
     }
@@ -291,6 +282,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
                         case BluetoothReaderService.STATE_LISTEN:
                         case BluetoothReaderService.STATE_NONE:
                             BTSearchPanel.setVisibility(View.VISIBLE);
+                            loadingPanel.setVisibility(View.GONE);
                             StartPanel.setVisibility(View.GONE);
                             break;
                     }
@@ -341,6 +333,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
         super.onDestroy();
         // Stop the Bluetooth chat services
         if (mChatService != null) mChatService.stop();
+        mPresenter.DestroyDisposables();
     }
 
 
@@ -355,7 +348,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
         mChatService = new BluetoothReaderService(this, mHandler);
         mOutStringBuffer = new StringBuffer("");   // Initialize the buffer for outgoing messages
     }
-
 
 
 
@@ -391,33 +383,26 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
                               sdkUniversalEndPoints.memcpy(mRefData, 0, mCmdData, 8, size);
                                 mRefSize = size;
 
-                                //save into database
-                                ContentValues values = new ContentValues();
-//                                values.put(DBHelper.TABLE_USER_ID, userId);
-                                values.put(DBHelper.TABLE_USER_ENROL1, mRefData);
-                                userDB.insert(DBHelper.TABLE_USER, null, values);
-//                                AddStatusList("Enrol Succeed with finger: " + userId);
-                                Toast.makeText(this, "Enroll Succeed with finger: " + userId, Toast.LENGTH_SHORT).show();
-                                userId += 1;
-                                mEnrollmentSuccessfulDialog.show();
-                                mEnrollmentErrorDialog.dismiss();
-                                //ISO Format
-                                //String bsiso=Conversions.getInstance().IsoChangeCoord(mRefData, 1);
-                                //SaveTextToFile(bsiso,"/sdcard/iso1.txt");
+//                              Encode the byte[] to string base64
+                                String encodedBase64 = android.util.Base64.encodeToString(mRefData, android.util.Base64.DEFAULT);
 
-                                //File file=new File("/sdcard/fingerprint1.dat");
-                                //try {
-                                //	file.createNewFile();
+//                            Send to database through graphQl
+                                if (getIntent().getExtras().getString(LecturerActivity) != null){
+                                    lecturerID = getIntent().getExtras().getString("LecturerID", "Lecturer ID");
 
-                                //	FileOutputStream out=new FileOutputStream(file);
-                                //	out.write(mRefData);
-                                //	out.close();
-                                //} catch (IOException e) {
-                                //	e.printStackTrace();
-                                //}
+//                                  finally, uploading it to the server
+                                    mPresenter.UploadLecturerFingerprint(token,lecturerID,encodedBase64);
+                                } else if (getIntent().getExtras().getString(StudentActivity) != null){
+                                    studentID = getIntent().getExtras().getString("StudentID", "Student ID");
+
+//                                  finally, uploading it to the server
+                                    mPresenter.UploadStudentFingerprint(token,studentID,encodedBase64);
+                                }
+
+                                loadingPanel.setVisibility(View.VISIBLE);
+                                StartPanel.setVisibility(View.GONE);
                             } else
                                 mEnrollmentErrorDialog.show();
-                             //  AddStatusList("Search Fail");
                         }
                         break;
                     }
@@ -466,6 +451,29 @@ public class EnrollFingerprintActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public void OnLecturerFingerprintUploaded(String message) {
+        loadingPanel.setVisibility(View.GONE);
+        mEnrollmentSuccessfulDialog.show();
+        mEnrollmentErrorDialog.dismiss();
+    }
 
+    @Override
+    public void OnStudentFingerprintUploaded(String message) {
+        loadingPanel.setVisibility(View.GONE);
+        mEnrollmentSuccessfulDialog.show();
+        mEnrollmentErrorDialog.dismiss();
+    }
 
+    @Override
+    public void OnFingerprintUploadFailed() {
+        errorMsg.setText("Fingerprint Upload not successful!");
+        mEnrollmentErrorDialog.show();
+    }
+
+    @Override
+    public void OnFingerprintUploadError(Throwable e) {
+        errorMsg.setText("Error: " + e.getMessage());
+        mEnrollmentErrorDialog.show();
+    }
 }

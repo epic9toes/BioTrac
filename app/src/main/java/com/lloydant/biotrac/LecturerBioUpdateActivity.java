@@ -78,18 +78,19 @@ public class LecturerBioUpdateActivity extends AppCompatActivity  implements Lec
         updateBtn.setOnClickListener(view -> {
             if (reason.getText().length() > 1 && prevFinger.getText().length() > 0 && newFinger.getText().length() > 0){
                 Intent intent = new Intent(LecturerBioUpdateActivity.this, UpdateFingerprintActivity.class);
-                intent.putExtra("LecturerName", username.getText());
-                intent.putExtra("LecturerID", lecturerID);
-                intent.putExtra("Reason", reason.getText());
-                intent.putExtra("prevFinger", prevFinger.getText());
-                intent.putExtra("newFinger", newFinger.getText());
+                intent.putExtra("Name", username.getText());
+                intent.putExtra("lecturerId", lecturerID);
+                intent.putExtra("reason", reason.getText().toString());
+                intent.putExtra("prevFinger", prevFinger.getText().toString());
+                intent.putExtra("newFinger", newFinger.getText().toString());
                 intent.putExtra(LecturerBioUpdateActivity,LecturerBioUpdateActivity);
+
+                mLoaderView.setVisibility(View.GONE);
+                notFoundPanel.setVisibility(View.VISIBLE);
                 reason.setText("");
                 prevFinger.setText("");
                 newFinger.setText("");
                 editTextSearch.setText("");
-                mLoaderView.setVisibility(View.GONE);
-                notFoundPanel.setVisibility(View.VISIBLE);
                 includeLecturerBio.setVisibility(View.GONE);
                 startActivity(intent);
             }else Toast.makeText(this, "All fields are compulsory.", Toast.LENGTH_LONG).show();
@@ -130,7 +131,7 @@ public class LecturerBioUpdateActivity extends AppCompatActivity  implements Lec
         includeLecturerBio.setVisibility(View.GONE);
         mLoaderView.setVisibility(View.GONE);
         notFoundPanel.setVisibility(View.VISIBLE);
-        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        Toast.makeText(this, "Error: " + e.getMessage() + ", please check your internet connection.", Toast.LENGTH_LONG).show();
     }
 
     @Override

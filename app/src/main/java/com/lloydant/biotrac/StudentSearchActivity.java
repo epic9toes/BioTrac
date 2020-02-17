@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,9 +38,13 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
     private EditText editTextSearch;
     private ImageView closeBtn;
 
+    private Button btnRetry;
+
     ArrayList<Student> mStudents;
     RecyclerView mRecyclerView;
     StudentListAdapter mListAdapter;
+    String token, dept_id, username;
+    int level;
 
     public  static  final String StudentActivity = "StudentActivity";
 
@@ -52,24 +57,28 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
         mLoading = findViewById(R.id.loading);
         mNotFound = findViewById(R.id.notFound);
         errorMsg = mNotFound.findViewById(R.id.errorMsg);
+        btnRetry = mNotFound.findViewById(R.id.btnRetry);
         mRecyclerView = findViewById(R.id.recyclerView);
         editTextSearch = findViewById(R.id.editTextSearch);
+        mRecyclerView = findViewById(R.id.recyclerView);
         closeBtn = findViewById(R.id.closeBtn);
-
         closeBtn.setOnClickListener(view -> finish());
 
-        mRecyclerView = findViewById(R.id.recyclerView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
         mPresenter = new StudentSearchActivityPresenter(this, new StudentSearchRepo());
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
-        String token = mPreferences.getString("token", "Token not found!");
-        String dept_id = mPreferences.getString("dept_id", "Depertment not found!");
-        int level = mPreferences.getInt("level", 0);
+        token = mPreferences.getString("token", "Token not found!");
+        dept_id = mPreferences.getString("dept_id", "Depertment not found!");
+        level = mPreferences.getInt("level", 0);
         mPresenter.GetStudentsByDepartment(token, dept_id,level );
 
+        btnRetry.setOnClickListener(view ->{
+            mLoading.setVisibility(View.VISIBLE);
+            mPresenter.GetStudentsByDepartment(token, dept_id,level );
+        });
 
         editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -121,24 +130,47 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
 
     @Override
     public void OnGetStudents(ArrayList<Student> studentArrayList) {
-        mLoading.setVisibility(View.GONE);
-        mNotFound.setVisibility(View.GONE);
-        mStudents = studentArrayList;
-        mListAdapter = new StudentListAdapter(mStudents, this);
-        mRecyclerView.setAdapter(mListAdapter);
+        if (studentArrayList.size() > 0){
+            mLoading.setVisibility(View.GONE);
+            mNotFound.setVisibility(View.GONE);
+            mStudents = studentArrayList;
+            mListAdapter = new StudentListAdapter(mStudents, this);
+            mRecyclerView.setAdapter(mListAdapter);
+        } else {
+            mLoading.setVisibility(View.GONE);
+            errorMsg.setText("No unregistered Student currently exist in your department, please try again later.");
+            btnRetry.setVisibility(View.GONE);
+            mNotFound.setVisibility(View.VISIBLE);
+        }
+
     }
 
     @Override
-    public void OnGetEmptyStudentList() {
+    public void OnGetNullDataResponse() {
         mLoading.setVisibility(View.GONE);
+        errorMsg.setText("Something went wrong!");
         mNotFound.setVisibility(View.VISIBLE);
-        Toast.makeText(this, "No Student found in your department!", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void OnFailure(Throwable e) {
         mLoading.setVisibility(View.GONE);
-        mNotFound.setVisibility(View.GONE);
-        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+        errorMsg.setText("Error: " + e.getMessage() + ", turn on the internet and try again.");
+        mNotFound.setVisibility(View.VISIBLE);
+        btnRetry.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPresenter.GetStudentsByDepartment(token, dept_id,level );
+        if (mStudents != null){
+            if (mStudents.size() < 1 && mNotFound.getVisibility() != View.VISIBLE){
+                errorMsg.setText("No unregistered Student currently exist in your department, please try again later.");
+                mNotFound.setVisibility(View.VISIBLE);
+
+            }
+        }
+
     }
 }

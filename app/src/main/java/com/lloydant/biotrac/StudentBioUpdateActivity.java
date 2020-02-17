@@ -79,11 +79,11 @@ public class StudentBioUpdateActivity extends AppCompatActivity implements Stude
         updateBtn.setOnClickListener(view -> {
             if (reason.getText().length() > 1 && prevFinger.getText().length() > 0 && newFinger.getText().length() > 0){
                 Intent intent = new Intent(StudentBioUpdateActivity.this, UpdateFingerprintActivity.class);
-                intent.putExtra("StudentName", username.getText());
-                intent.putExtra("StudentID", studentID);
-                intent.putExtra("Reason", reason.getText());
-                intent.putExtra("prevFinger", prevFinger.getText());
-                intent.putExtra("newFinger", newFinger.getText());
+                intent.putExtra("Name", username.getText());
+                intent.putExtra("student", studentID);
+                intent.putExtra("reason", reason.getText().toString());
+                intent.putExtra("prevFinger", prevFinger.getText().toString());
+                intent.putExtra("newFinger", newFinger.getText().toString());
                 intent.putExtra(StudentBioUpdateActivity,StudentBioUpdateActivity);
                 reason.setText("");
                 prevFinger.setText("");

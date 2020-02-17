@@ -62,7 +62,7 @@
         layout="@layout/loading"/>
 
     <include android:id="@+id/notFound"
-        layout="@layout/not_found" android:visibility="gone"/>
+        layout="@layout/not_found" android:visibility="visible"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
