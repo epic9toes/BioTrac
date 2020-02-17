@@ -36,9 +36,8 @@ public class MainActivityPresenter {
                 new DisposableObserver<Response<GetCoursemateQuery.Data>>() {
                     @Override
                     public void onNext(Response<GetCoursemateQuery.Data> dataResponse) {
-                    List<GetCoursemateQuery.Doc> doc = dataResponse.data().GetCoursemate().docs();
-
                     if (dataResponse.data().GetCoursemate().docs() != null){
+                        List<GetCoursemateQuery.Doc> doc = dataResponse.data().GetCoursemate().docs();
                         ArrayList<Student> arrayList = new ArrayList<>();
 
                         for (GetCoursemateQuery.Doc student : doc){

@@ -47,9 +47,6 @@ public class LoginActivity extends AppCompatActivity implements LoginActivityVie
         mErrorMsg = findViewById(R.id.errorMsg);
 
         mPreferences = getSharedPreferences(USER_PREF, Context.MODE_PRIVATE);
-
-        ClearSharedPreference();
-
         mPresenter = new LoginActivityPresenter(this, new LoginRepo(), mPreferences);
 
         mStorageHelper = new StorageHelper(this);
@@ -71,13 +68,13 @@ public class LoginActivity extends AppCompatActivity implements LoginActivityVie
 
     @Override
     public void OnStudentLoginSuccess(Student student) {
-        LoggedInSuccess(false);
+        LoggedInSuccess();
         mStorageHelper.createUserFolder(student.getId());
     }
 
     @Override
     public void OnAdminLoginSuccess(Admin admin) {
-        LoggedInSuccess(true);
+        LoggedInSuccess();
     }
 
     @Override
@@ -94,26 +91,17 @@ public class LoginActivity extends AppCompatActivity implements LoginActivityVie
         mErrorMsg.setText("Error: " + e.getMessage() + ", Please check internet connection.");
     }
 
-
-    public void ClearSharedPreference(){
-        mPreferences = getSharedPreferences(USER_PREF, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = mPreferences.edit();
-        editor.clear();
-        editor.apply();
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
         mPresenter.DestroyDisposables();
     }
 
-    void LoggedInSuccess(boolean isAdmin){
+    void LoggedInSuccess(){
         username.setText("");
         password.setText("");
         mErrorMsg.setVisibility(View.GONE);
         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        intent.putExtra("isAdmin",isAdmin);
         startActivity(intent);
         mLoaderView.setVisibility(View.GONE);
         finish();

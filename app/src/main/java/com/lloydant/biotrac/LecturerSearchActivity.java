@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,6 +37,8 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
     private TextView errorMsg;
     private EditText editTextSearch;
     private ImageView closeBtn;
+    private String token;
+    private Button btnRetry;
 
     public  static  final String LecturerActivity = "LecturerActivity";
 
@@ -47,6 +50,7 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
         mLoading = findViewById(R.id.loading);
         mNotFound = findViewById(R.id.notFound);
         errorMsg = mNotFound.findViewById(R.id.errorMsg);
+        btnRetry = mNotFound.findViewById(R.id.btnRetry);
         mRecyclerView = findViewById(R.id.recyclerView);
         editTextSearch = findViewById(R.id.editTextSearch);
         closeBtn = findViewById(R.id.closeBtn);
@@ -59,9 +63,13 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
 
         mPresenter = new LecturerSearchActivityPresenter(this, new LecturerSearchRepo());
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
-        String token = mPreferences.getString("token", "Token not found!");
+        token = mPreferences.getString("token", "Token not found!");
         mPresenter.GetLecturers(token);
 
+        btnRetry.setOnClickListener(view ->{
+            mLoading.setVisibility(View.VISIBLE);
+           mPresenter.GetLecturers(token);
+        });
 
         editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -112,24 +120,46 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
 
     @Override
     public void OnGetLecturers(ArrayList<Lecturer> lecturerArrayList) {
-        mLecturerArrayList = lecturerArrayList;
-        mListAdapter = new LecturerListAdapter(mLecturerArrayList, this);
-        mRecyclerView.setAdapter(mListAdapter);
-        mLoading.setVisibility(View.GONE);
-        mNotFound.setVisibility(View.GONE);
+        if (lecturerArrayList.size() > 0){
+            mLecturerArrayList = lecturerArrayList;
+            mListAdapter = new LecturerListAdapter(mLecturerArrayList, this);
+            mRecyclerView.setAdapter(mListAdapter);
+            mLoading.setVisibility(View.GONE);
+            mNotFound.setVisibility(View.GONE);
+        } else {
+            mLoading.setVisibility(View.GONE);
+            errorMsg.setText("No Lecturer currently exist on the system without a fingerprint, please try again later.");
+            btnRetry.setVisibility(View.GONE);
+            mNotFound.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
-    public void OnGetEmptyLecturerList() {
+    public void OnGetNullDataResponse() {
         mLoading.setVisibility(View.GONE);
+        errorMsg.setText("Something went wrong!");
         mNotFound.setVisibility(View.VISIBLE);
-        errorMsg.setText("No Lecturer currently exist on the system, please try again later.");
     }
+
 
     @Override
     public void OnFailure(Throwable e) {
         mLoading.setVisibility(View.GONE);
         mNotFound.setVisibility(View.VISIBLE);
         errorMsg.setText("Error: " + e.getMessage() + ", please check your internet connection.");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mPresenter.GetLecturers(token);
+        if (mLecturerArrayList != null){
+            if (mLecturerArrayList.size() < 1 && mNotFound.getVisibility() != View.VISIBLE){
+                errorMsg.setText("No Lecturer currently exist on the system without a fingerprint, please try again later.");
+                mNotFound.setVisibility(View.VISIBLE);
+
+            }
+        }
+
     }
 }

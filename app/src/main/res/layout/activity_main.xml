@@ -70,12 +70,27 @@
          </androidx.cardview.widget.CardView>
 
      </androidx.cardview.widget.CardView>
-
+        <Button
+            android:id="@+id/signOut"
+            android:layout_below="@id/photoPanel"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign Out"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawablePadding="10dp"
+            android:paddingLeft="45dp"
+            android:paddingRight="45dp"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="10dp"
+            android:layout_gravity="center"/>
 
  </RelativeLayout>
 
-    <include android:id="@+id/admin_menu" layout="@layout/admin_menu"/>
-    <include  android:id="@+id/student_menu" layout="@layout/student_menu"/>
+    <include  android:id="@+id/admin_menu" layout="@layout/admin_menu"/>
+    <include   android:id="@+id/student_menu" layout="@layout/student_menu"/>
 
     <LinearLayout
         android:layout_width="match_parent"

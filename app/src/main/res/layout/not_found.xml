@@ -20,4 +20,19 @@
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:text="We're sorry as no data was found, please try again later"/>
+    <Button
+        android:id="@+id/btnRetry"
+        android:layout_below="@+id/errorMsg"
+        android:textStyle="bold"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:text="Retry"
+        android:textAlignment="center"
+        android:textColor="@color/whiteColor"
+        android:background="@drawable/rounded_btn"
+        android:drawablePadding="10dp"
+        android:paddingLeft="75dp"
+        android:paddingRight="75dp"
+        android:layout_centerInParent="true"
+        android:layout_gravity="center"/>
 </RelativeLayout>

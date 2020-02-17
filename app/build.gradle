@@ -28,6 +28,9 @@ android {
     // build.gradle or build.gradle.kts
     apollo {
         generateKotlinModels.set(false) // or false for Java models
+        customTypeMapping = [
+                "Upload" : "com.apollographql.apollo.api.FileUpload"
+        ]
     }
 }
 

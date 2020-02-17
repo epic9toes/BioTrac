@@ -7,6 +7,6 @@ import java.util.ArrayList;
 public interface LecturerSearchActivityView {
 
     void OnGetLecturers(ArrayList<Lecturer> lecturerArrayList);
-    void OnGetEmptyLecturerList();
+    void OnGetNullDataResponse();
     void OnFailure(Throwable e);
 }

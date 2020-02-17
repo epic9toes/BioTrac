@@ -13,6 +13,7 @@
         android:layout_weight="1"
         android:layout_height="0dp"
         android:background="@drawable/bottom_curves">
+
         <ImageView
             android:id="@+id/imageView1"
             android:layout_width="wrap_content"
@@ -186,5 +187,15 @@
             android:layout_gravity="center"
             android:drawableLeft="@drawable/ic_fingerprint" />
     </LinearLayout>
+
+<LinearLayout
+    android:visibility="gone"
+    android:id="@+id/loadingPanel"
+    android:layout_width="match_parent"
+    android:layout_weight="1"
+    android:layout_height="0dp">
+    <include layout="@layout/loading" android:id="@+id/loading"/>
+</LinearLayout>
+
 
 </androidx.appcompat.widget.LinearLayoutCompat>

@@ -54,9 +54,27 @@ public class StorageHelper {
         } catch (IOException e) {
             return "Error: " + e.getMessage();
         }
-
-
     }
+
+    public File createJsonFile(String filename, String content, String owner) {
+
+//        Create the file
+        File file = new File(createUserFolder(owner), filename + ".json");
+
+        try {
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            fileOutputStream.write(content.getBytes());
+            fileOutputStream.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return file;
+    }
+
 
     public String readJsonFile(String owner, String filename){
         File file = new File(createUserFolder(owner) + filename);

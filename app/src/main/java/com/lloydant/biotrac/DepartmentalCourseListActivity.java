@@ -38,6 +38,7 @@ import com.lloydant.biotrac.customAdapters.DeptCourseAdapter;
 import com.lloydant.biotrac.helpers.StorageHelper;
 import com.lloydant.biotrac.models.Course;
 import com.lloydant.biotrac.models.DepartmentalCourse;
+import com.lloydant.biotrac.models.Lecturer;
 
 import java.util.ArrayList;
 
@@ -51,6 +52,7 @@ import static com.lloydant.biotrac.LoginActivity.USER_PREF;
 public class DepartmentalCourseListActivity extends AppCompatActivity implements DeptCourseAdapter.OnDepartmentalCourseListener {
 
     private ArrayList<Course> mCourseLists;
+    private ArrayList<Lecturer> mLecturerArrayList;
     private Dialog mAuthorizeDialog;
     private TextView mErrorMsg;
     private Button mTryAgainButton, mCancelButton;
@@ -64,15 +66,8 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
 
 
     // Debugging
-    //directory for saving the fingerprint images
-    private String sDirectory = "";
     public static final String TAG = "BluetoothReader";
 
-    //default image size
-    public static final int IMG_WIDTH = 256;
-    public static final int IMG_HEIGHT = 288;
-    public static final int IMG_SIZE = IMG_WIDTH * IMG_HEIGHT;
-    public static final int WSQBUFSIZE = 200000;
 
     //other image size
     public static final int IMG200 = 200;
@@ -84,7 +79,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
 
     private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
     private final static byte CMD_CAPTUREHOST = 0x08;    //Caputre to Host
-    private final static byte CMD_MATCH = 0x09;        //Match
 
 
 
@@ -121,8 +115,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     public byte mMatData[] = new byte[512];  // match FP template
     public int mMatSize = 0;
 
-
-    private final static byte CMD_ENROLHOST = 0x07;    //Enroll to Host
     private int imgSize;
 
     private byte mDeviceCmd = 0x00;
@@ -130,8 +122,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     private boolean mIsWork = false;
 
 
-    private int userId; // User ID number
-    private SQLiteDatabase userDB; //SQLite database object
 
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
@@ -224,10 +214,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
 
-        //initialize the SQLite
-        userId = 1;
-        DBHelper userDBHelper = new DBHelper(this);
-        userDB = userDBHelper.getWritableDatabase();
+
 
     }
 
@@ -249,8 +236,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
 
     @Override
     public void onDepartmentalCourseClick(View view, int position) {
-        String name = mCourseLists.get(position).getCode();
-//        Toast.makeText(this, "onStudentClick: clicked " + name, Toast.LENGTH_SHORT).show();
+        mLecturerArrayList = mCourseLists.get(position).getAssgined_lecturers();
         LecturerAuthorization();
     }
 
@@ -336,12 +322,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         mChatService.write(sendbuf);
 
         switch (sendbuf[4]) {
-            case CMD_GETIMAGE:
-//                mUpImageSize = 0;
-//                AddStatusList("Get Fingerprint Image ...");
-                break;
             case CMD_CAPTUREHOST:
-//                AddStatusList("Capture Template ...");
                 break;
         }
     }
@@ -455,30 +436,32 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
                             if (mCmdData[7] == 1) {
                               sdkUniversalEndPoints.memcpy(mMatData, 0, mCmdData, 8, size);
                                 mMatSize = size;
-
-                                Cursor cursor = userDB.query(DBHelper.TABLE_USER, null, null,
-                                        null, null, null, null, null);
                                 boolean matchFlag = false;
-                                while (cursor.moveToNext()) {
-                                    int id = cursor.getInt(cursor.getColumnIndex(DBHelper
-                                            .TABLE_USER_ID));
-                                    byte[] enrol1 = cursor.getBlob(cursor.getColumnIndex(DBHelper
-                                            .TABLE_USER_ENROL1));
-                                    int ret = FPMatch.getInstance().MatchFingerData(enrol1,
-                                            mMatData);
-                                    if (ret > 70) {
-                                        Toast.makeText(this, "Match OK,Finger = " + id + "!!",
-                                                Toast.LENGTH_SHORT).show();
-                                        matchFlag = true;
-                                        break;
+
+                                while (mLecturerArrayList.size() > 0){
+                                    for (Lecturer lecturer : mLecturerArrayList){
+                                        String name = lecturer.getName();
+                                        byte[] decodeBase64 = android.util.Base64.decode(lecturer.getFingerprint(), android.util.Base64.DEFAULT);
+                                        int ret = FPMatch.getInstance().MatchFingerData(decodeBase64,
+                                                mMatData);
+                                        if (ret > 70) {
+                                            Toast.makeText(this, "Match OK,Finger = " + name + "!!",
+                                                    Toast.LENGTH_SHORT).show();
+                                            matchFlag = true;
+                                            break;
+                                        }
+                                        if(!matchFlag){
+                                            ShowErrorPanelControls();
+                                        }
+                                        if(mLecturerArrayList.size() == 0){
+                                            Toast.makeText(this, "No lecturer found!!!",
+                                                    Toast.LENGTH_SHORT).show();
+//                                            ShowErrorPanelControls();
+                                        }
                                     }
                                 }
-                                if(!matchFlag){
-                                    ShowErrorPanelControls();
-                                }
-                                if(cursor.getCount() == 0){
-                                    ShowErrorPanelControls();
-                                }
+
+
 
                             } else {
                                 finish();

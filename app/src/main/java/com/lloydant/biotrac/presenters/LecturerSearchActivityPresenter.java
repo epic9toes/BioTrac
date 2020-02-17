@@ -1,7 +1,7 @@
 package com.lloydant.biotrac.presenters;
 
 import com.apollographql.apollo.api.Response;
-import com.lloydant.biotrac.GetLecturersQuery;
+import com.lloydant.biotrac.GetLecturersForEnrollmentQuery;
 import com.lloydant.biotrac.Repositories.ILecturerSearchRepository;
 import com.lloydant.biotrac.models.Lecturer;
 import com.lloydant.biotrac.views.LecturerSearchActivityView;
@@ -25,19 +25,19 @@ public class LecturerSearchActivityPresenter {
     }
 
     public void GetLecturers(String token){
-        mDisposable.add(mRepository.GetLecturerList(token).subscribeWith(new DisposableObserver<Response<GetLecturersQuery.Data>>() {
+        mDisposable.add(mRepository.GetLecturerList(token).subscribeWith(new DisposableObserver<Response<GetLecturersForEnrollmentQuery.Data>>() {
             @Override
-            public void onNext(Response<GetLecturersQuery.Data> dataResponse) {
+            public void onNext(Response<GetLecturersForEnrollmentQuery.Data> dataResponse) {
                 if (dataResponse.data() != null){
-                    List<GetLecturersQuery.Doc> data = dataResponse.data().GetLecturers().docs();
+                    List<GetLecturersForEnrollmentQuery.Doc> data = dataResponse.data().GetLecturersForEnrollment().docs();
                     ArrayList<Lecturer> lecturers = new ArrayList<>();
-                    for (GetLecturersQuery.Doc lecturer : data){
+                    for (GetLecturersForEnrollmentQuery.Doc lecturer : data){
                            Lecturer readLecturer = new Lecturer(lecturer.id(),lecturer.name(),lecturer.phone(),lecturer.email(),lecturer.fingerprint());
                            lecturers.add(readLecturer);
                     }
                     mView.OnGetLecturers(lecturers);
                 }else {
-                    mView.OnGetEmptyLecturerList();
+                    mView.OnGetNullDataResponse();
                 }
             }
 
