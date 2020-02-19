@@ -90,12 +90,7 @@ public class DeviceListActivity extends AppCompatActivity {
         }else {
             mCaption.setVisibility(View.GONE);
             mNoPairedDevice.setVisibility(View.VISIBLE);
-            mBTDeviceDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-                @Override
-                public void onCancel(DialogInterface dialogInterface) {
-                    DeviceListActivity.this.finish();
-                }
-            });
+            mBTDeviceDialog.setOnCancelListener(dialogInterface -> DeviceListActivity.this.finish());
         }
         mBTDeviceDialog.show();
     }

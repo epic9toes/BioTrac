@@ -138,7 +138,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
             mRecyclerView.setAdapter(mListAdapter);
         } else {
             mLoading.setVisibility(View.GONE);
-            errorMsg.setText("No unregistered Student currently exist in your department, please try again later.");
+            errorMsg.setText("No unregistered Student currently exist in your stdDepartment, please try again later.");
             btnRetry.setVisibility(View.GONE);
             mNotFound.setVisibility(View.VISIBLE);
         }
@@ -166,7 +166,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
         mPresenter.GetStudentsByDepartment(token, dept_id,level );
         if (mStudents != null){
             if (mStudents.size() < 1 && mNotFound.getVisibility() != View.VISIBLE){
-                errorMsg.setText("No unregistered Student currently exist in your department, please try again later.");
+                errorMsg.setText("No unregistered Student currently exist in your stdDepartment, please try again later.");
                 mNotFound.setVisibility(View.VISIBLE);
 
             }

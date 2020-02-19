@@ -113,12 +113,6 @@ mutation UpdateSingleStudentBiometric($id: ID!, $template: String!){
   }
 }
 
-mutation UploadLecturerBiometricData($file: Upload!){
-  UploadLecturerBiometricData(file: $file){
-    status
-    message
-  }
-}
 
 
 query GetLecturerByNo($no: String!){

@@ -140,7 +140,6 @@ public class SDKUniversalEndPoints {
                 TimeOutStop();
                 if (mIsWork) {
                     mIsWork = false;
-                    //AddStatusList("Time Out");
                 }
                 super.handleMessage(msg);
             }

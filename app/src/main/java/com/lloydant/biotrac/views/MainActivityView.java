@@ -1,12 +1,12 @@
 package com.lloydant.biotrac.views;
 
+import com.lloydant.biotrac.models.Coursemate;
 import com.lloydant.biotrac.models.DepartmentalCourse;
-import com.lloydant.biotrac.models.Student;
 
 import java.util.ArrayList;
 
 public interface MainActivityView {
-    void OnGetCourseMates(ArrayList<Student> studentArrayList);
+    void OnGetCourseMates(ArrayList<Coursemate> coursemates);
     void OnGetEmptyCourseMates();
     void OnGetRegisteredCourses(ArrayList<DepartmentalCourse> departmentalCourses);
     void OnGetEmptyRegisteredCourses();

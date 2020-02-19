@@ -6,13 +6,9 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -30,15 +26,17 @@ import android.widget.Toast;
 
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
-import com.fgtit.utils.DBHelper;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lloydant.biotrac.customAdapters.DeptCourseAdapter;
+import com.lloydant.biotrac.helpers.FingerprintConverter;
 import com.lloydant.biotrac.helpers.StorageHelper;
 import com.lloydant.biotrac.models.Course;
 import com.lloydant.biotrac.models.DepartmentalCourse;
 import com.lloydant.biotrac.models.Lecturer;
+
+import org.json.JSONArray;
 
 import java.util.ArrayList;
 
@@ -110,8 +108,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     private BluetoothReaderService mChatService;
 
     //definition of variables which used for storing the fingerprint template
-    public byte mRefData[] = new byte[512]; //enrolled FP template data
-    public int mRefSize = 0;
     public byte mMatData[] = new byte[512];  // match FP template
     public int mMatSize = 0;
 
@@ -132,9 +128,13 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
 
     SDKUniversalEndPoints sdkUniversalEndPoints;
 
+    private FingerprintConverter mFingerprintConverter;
+
     private View CoursesPanel, searchBtPanel;
     private Button searchBT;
 
+    private String departmentalCourse;
+    private  String studentID, CourseCode, CourseTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -197,8 +197,8 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
+        mFingerprintConverter = new FingerprintConverter(new Gson());
         sdkUniversalEndPoints = new SDKUniversalEndPoints(mBluetoothAdapter, mChatService);
-        sdkUniversalEndPoints.CreateDirectory();
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
@@ -237,13 +237,16 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     @Override
     public void onDepartmentalCourseClick(View view, int position) {
         mLecturerArrayList = mCourseLists.get(position).getAssgined_lecturers();
+        departmentalCourse = mCourseLists.get(position).getId();
+        CourseCode = mCourseLists.get(position).getCode();
+        CourseTitle = mCourseLists.get(position).getTitle();
         LecturerAuthorization();
     }
 
 //    populate departmental courses from local storage
     void PopulateDeptCourseList(){
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
-        String studentID = mPreferences.getString("id", "Student ID");
+        studentID = mPreferences.getString("id", "Student ID");
         ArrayList<DepartmentalCourse> departmentalCourses = new Gson().fromJson(mStorageHelper.readJsonFile(studentID, "RegisteredCourses.json"), new TypeToken<ArrayList<DepartmentalCourse>>(){}.getType());
         for (DepartmentalCourse departmentalCourse : departmentalCourses){
            mCourseLists.addAll(departmentalCourse.getCourses());
@@ -267,10 +270,12 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     private void ShowErrorPanelControls(){
 
         mTryAgainButton.setVisibility(View.VISIBLE);
-        mTryAgainButton.setOnClickListener(view -> SendCommand(CMD_CAPTUREHOST, null, 0));
+        mTryAgainButton.setOnClickListener(view ->{
+            mErrorMsg.setVisibility(View.GONE);
+            SendCommand(CMD_CAPTUREHOST, null, 0);
+        } );
         mCancelButton.setVisibility(View.VISIBLE);
         mCancelButton.setOnClickListener(view -> finish());
-        mErrorMsg.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -436,29 +441,37 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
                             if (mCmdData[7] == 1) {
                               sdkUniversalEndPoints.memcpy(mMatData, 0, mCmdData, 8, size);
                                 mMatSize = size;
-                                boolean matchFlag = false;
 
-                                while (mLecturerArrayList.size() > 0){
+
+                                if (mLecturerArrayList.size() > 0){
                                     for (Lecturer lecturer : mLecturerArrayList){
+                                        String id = lecturer.getId();
                                         String name = lecturer.getName();
-                                        byte[] decodeBase64 = android.util.Base64.decode(lecturer.getFingerprint(), android.util.Base64.DEFAULT);
-                                        int ret = FPMatch.getInstance().MatchFingerData(decodeBase64,
+                                        String fingerprint = lecturer.getFingerprint();
+
+                                        byte[] decodedJsonString =  mFingerprintConverter.JsonToByteArray(fingerprint);
+
+                                        int ret = FPMatch.getInstance().MatchFingerData(decodedJsonString,
                                                 mMatData);
                                         if (ret > 70) {
-                                            Toast.makeText(this, "Match OK,Finger = " + name + "!!",
-                                                    Toast.LENGTH_SHORT).show();
-                                            matchFlag = true;
+                                            Intent intent = new Intent(DepartmentalCourseListActivity.this,AttendanceActivity.class);
+                                            intent.putExtra("Lecturer", id);
+                                            intent.putExtra("LecturerName",name);
+                                            intent.putExtra("CourseCode",CourseCode);
+                                            intent.putExtra("CourseTitle",CourseTitle);
+                                            intent.putExtra("departmentalCourse", departmentalCourse);
+                                            intent.putExtra("lecturerFingerprint", fingerprint);
+                                            startActivity(intent);
                                             break;
-                                        }
-                                        if(!matchFlag){
+
+                                        } else {
+                                            mErrorMsg.setVisibility(View.VISIBLE);
                                             ShowErrorPanelControls();
                                         }
-                                        if(mLecturerArrayList.size() == 0){
-                                            Toast.makeText(this, "No lecturer found!!!",
-                                                    Toast.LENGTH_SHORT).show();
-//                                            ShowErrorPanelControls();
-                                        }
                                     }
+                                } else {
+                                    Toast.makeText(this, "No Lecturer found!!!",
+                                            Toast.LENGTH_LONG).show();
                                 }
 
 

@@ -56,7 +56,7 @@
                 android:paddingTop="10dp"/>
 
             <TextView
-                android:id="@+id/department"
+                android:id="@+id/stdDepartment"
                 android:layout_alignLeft="@id/imgContainer"
                 android:layout_marginLeft="105dp"
                 android:layout_below="@id/username"
@@ -69,10 +69,10 @@
                 android:paddingBottom="2dp"/>
 
             <TextView
-                android:id="@+id/regNo"
+                android:id="@+id/stdRegNo"
                 android:layout_alignLeft="@id/imgContainer"
                 android:layout_marginLeft="105dp"
-                android:layout_below="@id/department"
+                android:layout_below="@id/stdDepartment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Esut/2001/02365"

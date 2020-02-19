@@ -26,9 +26,18 @@ import android.widget.Toast;
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
 import com.fgtit.utils.DBHelper;
+import com.google.gson.Gson;
 import com.lloydant.biotrac.Repositories.implementations.UpdateFingerprintRepo;
+import com.lloydant.biotrac.helpers.FingerprintConverter;
+import com.lloydant.biotrac.models.FingerprintObj;
 import com.lloydant.biotrac.presenters.UpdateFingerprintActivityPresenter;
 import com.lloydant.biotrac.views.UpdateFingerprintView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -103,9 +112,10 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
     private String token;
     public static final String USER_PREF = "com.lloydant.attendance.logged_in_user";
     private SharedPreferences mPreferences;
+    private FingerprintConverter mFingerprintConverter;
 
 //    UpdateFingerModel Objects
-    private String UserId, reason, prevFinger, newFinger, template;
+    private String UserId, reason, prevFinger, newFinger;
 
     private TextView errorMsg;
 
@@ -150,6 +160,7 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
         BTSearchPanel = findViewById(R.id.searchBtPanel);
         deviceInfoPanel = findViewById(R.id.deviceInfoPanel);
 
+        mFingerprintConverter = new FingerprintConverter(new Gson());
         mPresenter = new UpdateFingerprintActivityPresenter(new UpdateFingerprintRepo(),this);
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         token = mPreferences.getString("token", "Empty Token");
@@ -392,18 +403,18 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
                                 sdkUniversalEndPoints.memcpy(mRefData, 0, mCmdData, 8, size);
                                 mRefSize = size;
 
-                        //      Encode the byte[] to string base64
-                                template = android.util.Base64.encodeToString(mRefData, android.util.Base64.DEFAULT);
+                                String JsonString = mFingerprintConverter.ByteToJsonString(mRefData);
+
 
 //                                Send to database through graphQl
                                 if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null){
 
                                     //   finally, uploading it to the server
-                                mPresenter.UpdateStudentFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,template,token);
+                                mPresenter.UpdateStudentFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,JsonString,token);
                                 } else if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null){
 
                             //   finally, uploading it to the server
-                             mPresenter.UpdateLecturerFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,template,token);
+                             mPresenter.UpdateLecturerFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,JsonString,token);
                                 }
 
                                 loadingPanel.setVisibility(View.VISIBLE);

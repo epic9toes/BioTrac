@@ -103,11 +103,11 @@ public class StudentBioUpdateActivity extends AppCompatActivity implements Stude
 //        build returned object
         profile_img = includeStudentBio.findViewById(R.id.profile_image);
         username  = includeStudentBio.findViewById(R.id.username);
-        department = includeStudentBio.findViewById(R.id.department);
-        regNo = includeStudentBio.findViewById(R.id.regNo);
+        department = includeStudentBio.findViewById(R.id.stdDepartment);
+        regNo = includeStudentBio.findViewById(R.id.stdRegNo);
 
         profile_img.setImageURI(null);
-        profile_img.setImageURI(Uri.parse(student.getImage()));
+//        profile_img.setImageURI(Uri.parse(student.getImage()));
         username.setText(student.getName());
         department.setText(student.getDepartment().getName());
         regNo.setText(student.getReg_no());

@@ -55,6 +55,9 @@
                     android:text="Prof. Okonkwor E."
                     android:textAllCaps="true"
                     android:textStyle="bold"
+                    android:lines="1"
+                    android:ems="8"
+                    android:ellipsize="end"
                     android:textSize="25sp"
                     android:layout_marginLeft="105dp"
                     android:paddingTop="20dp"
@@ -133,6 +136,7 @@
                 android:textColor="@color/primaryText"/>
 
             <TextView
+                android:id="@+id/courseTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Industrial Chemistry"
@@ -152,6 +156,7 @@
                 android:textColor="@color/primaryText"/>
 
             <TextView
+                android:id="@+id/dateTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Thurs, 15th Nov, 2020"
@@ -171,6 +176,7 @@
                 android:textColor="@color/primaryText"/>
 
             <TextView
+                android:id="@+id/timeTxt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="03:41 PM"
@@ -184,6 +190,8 @@
     </RelativeLayout>
 
     <LinearLayout
+        android:visibility="visible"
+        android:id="@+id/fingerPanel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="2"
@@ -191,6 +199,7 @@
         android:layout_marginTop="10dp">
 
         <LinearLayout
+
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="2.5"
@@ -228,7 +237,7 @@
 
         <androidx.cardview.widget.CardView
             android:layout_weight="0.2"
-            android:id="@+id/card_view"
+            android:id="@+id/passedStudent"
             card_view:cardElevation="5dp"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
@@ -268,6 +277,9 @@
                     android:layout_height="wrap_content"
                     android:text="Mohammed Ali C."
                     android:textStyle="bold"
+                    android:lines="1"
+                    android:ems="8"
+                    android:ellipsize="end"
                     android:textSize="22sp"
                     android:layout_marginLeft="105dp"
                     android:paddingLeft="10dp"
@@ -276,23 +288,26 @@
                     android:paddingTop="10dp"/>
 
                 <TextView
-                    android:id="@+id/department"
+                    android:id="@+id/stdDepartment"
                     android:layout_alignLeft="@id/stdImgContainer"
                     android:layout_marginLeft="105dp"
                     android:layout_below="@id/stdUsername"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Computer Engineering"
+                    android:lines="1"
+                    android:ems="8"
+                    android:ellipsize="end"
                     android:textSize="20sp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
                     android:paddingBottom="2dp"/>
 
                 <TextView
-                    android:id="@+id/regNo"
+                    android:id="@+id/stdRegNo"
                     android:layout_alignLeft="@id/stdImgContainer"
                     android:layout_marginLeft="105dp"
-                    android:layout_below="@id/department"
+                    android:layout_below="@id/stdDepartment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="NAU/2001/02365"
@@ -318,6 +333,7 @@
             android:layout_weight="1.8"
             android:layout_width="match_parent"
             android:layout_height="0dp">
+
             <Button
                 android:layout_centerInParent="true"
                 android:id="@+id/finishAttendanceBtn"
@@ -333,8 +349,102 @@
                 android:gravity="center"
 
                 android:layout_gravity="center"/>
+
         </RelativeLayout>
 
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/searchBtPanel"
+        android:layout_weight="2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@color/backgroundColor">
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="40dp"
+            android:src="@drawable/sad"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Bluetooth is disconnected"
+            android:textSize="15sp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:textAlignment="center"
+            android:textColor="@color/primaryText"
+            android:textStyle="normal"/>
+
+        <Button
+            android:id="@+id/searchBT"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:text="Search Bluetooth"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawableStart="@drawable/ic_fingerprint"
+            android:drawablePadding="10dp"
+            android:paddingLeft="75dp"
+            android:paddingRight="85dp"
+            android:layout_gravity="center"
+            android:drawableLeft="@drawable/ic_fingerprint" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/startAttendancePanel"
+        android:layout_weight="2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@color/backgroundColor">
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="40dp"
+            android:src="@drawable/fast"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Click on the below button to either start or continue attendance"
+            android:textSize="15sp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:textAlignment="center"
+            android:textColor="@color/primaryText"
+            android:textStyle="normal"/>
+
+        <Button
+            android:id="@+id/btnStartAttendance"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:text="Start Attendance"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawableStart="@drawable/ic_fingerprint"
+            android:drawablePadding="10dp"
+            android:paddingLeft="75dp"
+            android:paddingRight="85dp"
+            android:layout_gravity="center"
+            android:drawableLeft="@drawable/ic_fingerprint" />
 
     </LinearLayout>
 

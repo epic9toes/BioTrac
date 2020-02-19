@@ -4,10 +4,7 @@ import com.apollographql.apollo.api.Response;
 import com.lloydant.biotrac.Repositories.implementations.EnrollFingerprintRepo;
 import com.lloydant.biotrac.UpdateSingleLecturerBiometricMutation;
 import com.lloydant.biotrac.UpdateSingleStudentBiometricMutation;
-import com.lloydant.biotrac.UploadLecturerBiometricDataMutation;
 import com.lloydant.biotrac.views.EnrollFingerprintActivityView;
-
-import java.io.File;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;

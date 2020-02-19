@@ -29,10 +29,23 @@ mutation StudentLogin($no: String!, $password: String!){
   }
 }
 
+
 query GetCoursemate{
   GetCoursemate{
-    docs{
-     ...StudentFragment
+    docs {
+      id
+      name
+      fingerprint
+      registered_courses {
+        id
+      }
+      image
+      reg_no
+      department {
+        id
+        name
+      }
+      level
     }
   }
 }
@@ -70,13 +83,6 @@ query GetRegisteredCourses{
   }
 
 
-
-mutation UploadStudentBiometricData($file: Upload!){
-  UploadStudentBiometricData(file: $file){
-    status
-    message
-  }
-}
 
 mutation UploadAttendance($file: Upload! ){
   UploadAttendance(file: $file){

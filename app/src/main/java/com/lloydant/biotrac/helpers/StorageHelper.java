@@ -47,7 +47,7 @@ public class StorageHelper {
             fileOutputStream.write(content.getBytes());
             fileOutputStream.close();
 
-            return "Coursemates Saved!";
+            return "Saved!";
 
         } catch (FileNotFoundException e) {
             return "Error: " + e.getMessage();
@@ -56,23 +56,11 @@ public class StorageHelper {
         }
     }
 
-    public File createJsonFile(String filename, String content, String owner) {
-
-//        Create the file
-        File file = new File(createUserFolder(owner), filename + ".json");
-
-        try {
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.write(content.getBytes());
-            fileOutputStream.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return file;
+    public String getFilePath(String filename, String owner) {
+        String pathname = mContext.getFilesDir() + "/" + owner + "/" + filename;
+        File file = new File(pathname);
+        String dir = file.getAbsolutePath();
+        return dir;
     }
 
 
