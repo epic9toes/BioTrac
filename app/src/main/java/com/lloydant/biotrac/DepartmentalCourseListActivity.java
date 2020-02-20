@@ -20,7 +20,6 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,9 +35,9 @@ import com.lloydant.biotrac.models.Course;
 import com.lloydant.biotrac.models.DepartmentalCourse;
 import com.lloydant.biotrac.models.Lecturer;
 
-import org.json.JSONArray;
-
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -66,13 +65,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     // Debugging
     public static final String TAG = "BluetoothReader";
 
-
-    //other image size
-    public static final int IMG200 = 200;
-    public static final int IMG288 = 288;
-    public static final int IMG360 = 360;
-
-
     private byte mCmdData[] = new byte[10240];
 
     private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
@@ -95,9 +87,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     private static final int REQUEST_CONNECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
 
-    // Layout Views
-    private ImageView fingerprintImage;
-
     // Name of the connected device
     private String mConnectedDeviceName = null;
     // String buffer for outgoing messages
@@ -111,13 +100,13 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     public byte mMatData[] = new byte[512];  // match FP template
     public int mMatSize = 0;
 
-    private int imgSize;
-
     private byte mDeviceCmd = 0x00;
     private int mCmdSize = 0;
     private boolean mIsWork = false;
 
-
+    private Timer mTimerTimeout = null;
+    private TimerTask mTaskTimeout = null;
+    private Handler mHandlerTimeout;
 
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
@@ -125,8 +114,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
-
-    SDKUniversalEndPoints sdkUniversalEndPoints;
 
     private FingerprintConverter mFingerprintConverter;
 
@@ -196,9 +183,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        mFingerprintConverter = new FingerprintConverter(new Gson());
-        sdkUniversalEndPoints = new SDKUniversalEndPoints(mBluetoothAdapter, mChatService);
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
@@ -214,9 +198,96 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
 
-
+        mFingerprintConverter = new FingerprintConverter(new Gson());
 
     }
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // If BT is not on, request that it be enabled.
+        // setupChat() will then be called during onActivityResult
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
+            // Otherwise, setup the chat session
+        } else {
+            if (mChatService == null) setupChat();
+        }
+    }
+
+    // The Handler that gets information back from the BluetoothChatService
+    @SuppressLint("HandlerLeak")
+    private final Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MESSAGE_STATE_CHANGE:
+                    switch (msg.arg1) {
+                        case BluetoothReaderService.STATE_CONNECTED:
+                            searchBtPanel.setVisibility(View.GONE);
+                            CoursesPanel.setVisibility(View.VISIBLE);
+                            break;
+                        case BluetoothReaderService.STATE_CONNECTING:
+                            Toast.makeText(DepartmentalCourseListActivity.this, "Trying to connect bluetooth...", Toast.LENGTH_SHORT).show();
+                            break;
+                        case BluetoothReaderService.STATE_LISTEN:
+                        case BluetoothReaderService.STATE_NONE:
+                            mAuthorizeDialog.dismiss();
+                            searchBtPanel.setVisibility(View.VISIBLE);
+                            CoursesPanel.setVisibility(View.GONE);
+                            break;
+                    }
+                    break;
+                case MESSAGE_WRITE:
+                    break;
+                case MESSAGE_READ:
+                    byte[] readBuf = (byte[]) msg.obj;
+                    if (readBuf.length > 0) {
+                        if (readBuf[0] == (byte) 0x1b) {
+                            AddStatusListHex(readBuf, msg.arg1);
+                        } else {
+                            ReceiveCommand(readBuf, msg.arg1);
+                        }
+                    }
+                    break;
+                case MESSAGE_DEVICE_NAME:
+                    // save the connected device's name
+                    mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
+                    Toast.makeText(getApplicationContext(), "Connected to " + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
+                    break;
+                case MESSAGE_TOAST:
+                    Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST), Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        }
+    };
+
+
+    @Override
+    public synchronized void onResume() {
+        super.onResume();
+        // Performing this check in onResume() covers the case in which BT was
+        // not enabled during onStart(), so we were paused to enable it...
+        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
+        if (mChatService != null) {
+            // Only if the state is STATE_NONE, do we know that we haven't started already
+            if (mChatService.getState() == BluetoothReaderService.STATE_NONE) {
+                // Start the Bluetooth chat services
+                mChatService.start();
+            }
+        }
+    }
+
+
+    private void AddStatusListHex(byte[] data, int size) {
+        String text = "";
+        for (int i = 0; i < size; i++) {
+            text = text + " " + Integer.toHexString(data[i] & 0xFF).toUpperCase() + "  ";
+        }
+    }
+
 
     private void filterRecycler(String text) {
         //new array list that will hold the filtered data
@@ -232,6 +303,134 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         }
         //calling a method of the adapter class and passing the filtered list
         mDeptCourseAdapter.filterList(courses);
+    }
+
+    /**
+     * method of copying the byte[] data with specific length
+     * @param dstbuf byte[] for storing the copied data with specific length
+     * @param dstoffset the starting point for storing
+     * @param srcbuf the source byte[] used for copying.
+     * @param srcoffset the starting point for copying
+     * @param size the length required to copy
+     */
+    private void memcpy(byte[] dstbuf, int dstoffset, byte[] srcbuf, int srcoffset, int size) {
+        for (int i = 0; i < size; i++) {
+            dstbuf[dstoffset + i] = srcbuf[srcoffset + i];
+        }
+    }
+
+    /**
+     * calculate the check sum of the byte[]
+     * @param buffer byte[] required for calculating
+     * @param size the size of the byte[]
+     * @return the calculated check sum
+     */
+    private int calcCheckSum(byte[] buffer, int size) {
+        int sum = 0;
+        for (int i = 0; i < size; i++) {
+            sum = sum + buffer[i];
+        }
+        return (sum & 0x00ff);
+    }
+
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Stop the Bluetooth chat services
+        if (mChatService != null) mChatService.stop();
+    }
+
+    /**
+     * configure for the UI components
+     */
+    private void setupChat() {
+        Log.d(TAG, "setupChat()");
+        mChatService = new BluetoothReaderService(this, mHandler);    // Initialize the BluetoothChatService to perform bluetooth connections
+        mOutStringBuffer = new StringBuffer("");                    // Initialize the buffer for outgoing messages
+    }
+
+    /**
+     * stat the timer for counting
+     */
+    public void TimeOutStart() {
+        if (mTimerTimeout != null) {
+            return;
+        }
+        mTimerTimeout = new Timer();
+        mHandlerTimeout = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                TimeOutStop();
+                if (mIsWork) {
+                    mIsWork = false;
+                    //AddStatusList("Time Out");
+                }
+                super.handleMessage(msg);
+            }
+        };
+        mTaskTimeout = new TimerTask() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                message.what = 1;
+                mHandlerTimeout.sendMessage(message);
+            }
+        };
+        mTimerTimeout.schedule(mTaskTimeout, 10000, 10000);
+    }
+
+    /**
+     * stop the timer
+     */
+    public void TimeOutStop() {
+        if (mTimerTimeout != null) {
+            mTimerTimeout.cancel();
+            mTimerTimeout = null;
+            mTaskTimeout.cancel();
+            mTaskTimeout = null;
+        }
+    }
+
+    /**
+     * Generate the command package sending via bluetooth
+     * @param cmdid command code for different function achieve.
+     * @param data the required data need to send to the device
+     * @param size the size of the byte[] data
+     */
+    private void SendCommand(byte cmdid, byte[] data, int size) {
+        if (mIsWork) return;
+
+        int sendsize = 9 + size;
+        byte[] sendbuf = new byte[sendsize];
+        sendbuf[0] = 'F';
+        sendbuf[1] = 'T';
+        sendbuf[2] = 0;
+        sendbuf[3] = 0;
+        sendbuf[4] = cmdid;
+        sendbuf[5] = (byte) (size);
+        sendbuf[6] = (byte) (size >> 8);
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                sendbuf[7 + i] = data[i];
+            }
+        }
+        int sum = calcCheckSum(sendbuf, (7 + size));
+        sendbuf[7 + size] = (byte) (sum);
+        sendbuf[8 + size] = (byte) (sum >> 8);
+
+        mIsWork = true;
+        TimeOutStart();
+        mDeviceCmd = cmdid;
+        mCmdSize = 0;
+        mChatService.write(sendbuf);
+
+        switch (sendbuf[4]) {
+            case CMD_CAPTUREHOST:
+                Toast.makeText(this, "Capture Template ...", Toast.LENGTH_SHORT).show();
+                break;
+
+        }
     }
 
     @Override
@@ -278,137 +477,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         mCancelButton.setOnClickListener(view -> finish());
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        // If BT is not on, request that it be enabled.
-        // setupChat() will then be called during onActivityResult
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableIntent, REQUEST_ENABLE_BT);
-            // Otherwise, setup the chat session
-        } else {
-            if (mChatService == null) setupChat();
-        }
-    }
-
-
-    /**
-     * Generate the command package sending via bluetooth
-     * @param cmdid command code for different function achieve.
-     * @param data the required data need to send to the device
-     * @param size the size of the byte[] data
-     */
-    public void SendCommand(byte cmdid, byte[] data, int size) {
-        if (mIsWork) return;
-
-        int sendsize = 9 + size;
-        byte[] sendbuf = new byte[sendsize];
-        sendbuf[0] = 'F';
-        sendbuf[1] = 'T';
-        sendbuf[2] = 0;
-        sendbuf[3] = 0;
-        sendbuf[4] = cmdid;
-        sendbuf[5] = (byte) (size);
-        sendbuf[6] = (byte) (size >> 8);
-        if (size > 0) {
-            for (int i = 0; i < size; i++) {
-                sendbuf[7 + i] = data[i];
-            }
-        }
-        int sum = sdkUniversalEndPoints.calcCheckSum(sendbuf, (7 + size));
-        sendbuf[7 + size] = (byte) (sum);
-        sendbuf[8 + size] = (byte) (sum >> 8);
-
-        mIsWork = true;
-        sdkUniversalEndPoints.TimeOutStart();
-        mDeviceCmd = cmdid;
-        mCmdSize = 0;
-        mChatService.write(sendbuf);
-
-        switch (sendbuf[4]) {
-            case CMD_CAPTUREHOST:
-                break;
-        }
-    }
-
-
-    // The Handler that gets information back from the BluetoothChatService
-    @SuppressLint("HandlerLeak")
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
-                        case BluetoothReaderService.STATE_CONNECTED:
-                            searchBtPanel.setVisibility(View.GONE);
-                            CoursesPanel.setVisibility(View.VISIBLE);
-                            break;
-                        case BluetoothReaderService.STATE_CONNECTING:
-                            Toast.makeText(DepartmentalCourseListActivity.this, "Trying to connect bluetooth...", Toast.LENGTH_SHORT).show();
-                            break;
-                        case BluetoothReaderService.STATE_LISTEN:
-                        case BluetoothReaderService.STATE_NONE:
-                            mAuthorizeDialog.dismiss();
-                            searchBtPanel.setVisibility(View.VISIBLE);
-                            CoursesPanel.setVisibility(View.GONE);
-                            break;
-                    }
-                    break;
-                case MESSAGE_WRITE:
-                    break;
-                case MESSAGE_READ:
-                    byte[] readBuf = (byte[]) msg.obj;
-                    if (readBuf.length > 0) {
-                        if (readBuf[0] == (byte) 0x1b) {
-                            sdkUniversalEndPoints.AddStatusListHex(readBuf, msg.arg1);
-                        } else {
-                            ReceiveCommand(readBuf, msg.arg1);
-                        }
-                    }
-                    break;
-                case MESSAGE_DEVICE_NAME:
-                    // save the connected device's name
-                    mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
-
-                    Toast.makeText(getApplicationContext(), "Connected to " + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
-                    break;
-                case MESSAGE_TOAST:
-                    Toast.makeText(getApplicationContext(), msg.getData().getString(TOAST), Toast.LENGTH_SHORT).show();
-                    break;
-            }
-        }
-    };
-
-    @Override
-    public synchronized void onResume() {
-        super.onResume();
-        // Performing this check in onResume() covers the case in which BT was
-        // not enabled during onStart(), so we were paused to enable it...
-        // onResume() will be called when ACTION_REQUEST_ENABLE activity returns.
-        if (mChatService != null) {
-            // Only if the state is STATE_NONE, do we know that we haven't started already
-            if (mChatService.getState() == BluetoothReaderService.STATE_NONE) {
-                // Start the Bluetooth chat services
-                mChatService.start();
-            }
-        }
-    }
-
-
-    /**
-     * configure for the UI components
-     */
-    private void setupChat() {
-        Log.d(TAG, "setupChat()");
-
-        fingerprintImage = findViewById(R.id.imageView1);
-
-        mChatService = new BluetoothReaderService(this, mHandler);
-        mOutStringBuffer = new StringBuffer("");   // Initialize the buffer for outgoing messages
-    }
-
 
     /**
      * Received the response from the device
@@ -417,69 +485,64 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
      */
     private void ReceiveCommand(byte[] databuf, int datasize) {
         if (mDeviceCmd == CMD_GETIMAGE) { //receiving the image data from the device
-
-            if (sdkUniversalEndPoints.ConvertFingerprintToImage(imgSize,IMG200,IMG288,IMG360,databuf,datasize) != null){
-                fingerprintImage.setImageBitmap(sdkUniversalEndPoints.ConvertFingerprintToImage(imgSize,IMG200,IMG288,IMG360,databuf,datasize));
-            }
-
+            Toast.makeText(this, "This is for image convertion", Toast.LENGTH_SHORT).show();
         } else { //other data received from the device
             // append the databuf received into mCmdData.
-            sdkUniversalEndPoints.memcpy(mCmdData, mCmdSize, databuf, 0, datasize);
+            memcpy(mCmdData, mCmdSize, databuf, 0, datasize);
             mCmdSize = mCmdSize + datasize;
             int totalsize = (byte) (mCmdData[5]) + ((mCmdData[6] << 8) & 0xFF00) + 9;
             if (mCmdSize >= totalsize) {
                 mCmdSize = 0;
                 mIsWork = false;
-                sdkUniversalEndPoints.TimeOutStop();
+                TimeOutStop();
 
                 //parsing the mCmdData
                 if ((mCmdData[0] == 'F') && (mCmdData[1] == 'T')) {
                     switch (mCmdData[4]) {
-
                         case CMD_CAPTUREHOST: {
                             int size = (byte) (mCmdData[5]) + ((mCmdData[6] << 8) & 0xFF00) - 1;
                             if (mCmdData[7] == 1) {
-                              sdkUniversalEndPoints.memcpy(mMatData, 0, mCmdData, 8, size);
+                                memcpy(mMatData, 0, mCmdData, 8, size);
                                 mMatSize = size;
 
+                                boolean matchFlag = false;
+                                for (Lecturer lecturer: mLecturerArrayList){
 
-                                if (mLecturerArrayList.size() > 0){
-                                    for (Lecturer lecturer : mLecturerArrayList){
-                                        String id = lecturer.getId();
-                                        String name = lecturer.getName();
-                                        String fingerprint = lecturer.getFingerprint();
-
-                                        byte[] decodedJsonString =  mFingerprintConverter.JsonToByteArray(fingerprint);
-
-                                        int ret = FPMatch.getInstance().MatchFingerData(decodedJsonString,
+                                    byte[] enroll;
+                                    int ret = 0;
+                                    if (lecturer.getFingerprint() != null){
+                                       enroll  = mFingerprintConverter.JsonToByteArray(lecturer.getFingerprint());
+                                       ret = FPMatch.getInstance().MatchFingerData(enroll,
                                                 mMatData);
-                                        if (ret > 70) {
-                                            Intent intent = new Intent(DepartmentalCourseListActivity.this,AttendanceActivity.class);
-                                            intent.putExtra("Lecturer", id);
-                                            intent.putExtra("LecturerName",name);
-                                            intent.putExtra("CourseCode",CourseCode);
-                                            intent.putExtra("CourseTitle",CourseTitle);
-                                            intent.putExtra("departmentalCourse", departmentalCourse);
-                                            intent.putExtra("lecturerFingerprint", fingerprint);
-                                            startActivity(intent);
-                                            break;
-
-                                        } else {
-                                            mErrorMsg.setVisibility(View.VISIBLE);
-                                            ShowErrorPanelControls();
-                                        }
                                     }
-                                } else {
+
+                                    if (ret > 70) {
+                                        mAuthorizeDialog.dismiss();
+                                        Intent intent = new Intent(DepartmentalCourseListActivity.this,AttendanceActivity.class);
+                                        intent.putExtra("Lecturer", lecturer.getId());
+                                        intent.putExtra("LecturerName",lecturer.getName());
+                                        intent.putExtra("CourseCode",CourseCode);
+                                        intent.putExtra("CourseTitle",CourseTitle);
+                                        intent.putExtra("departmentalCourse", departmentalCourse);
+                                        intent.putExtra("lecturerFingerprint", lecturer.getFingerprint());
+                                        startActivity(intent);
+                                        matchFlag = true;
+                                        break;
+                                    }
+                                }
+                                if(!matchFlag){
+                                    mErrorMsg.setVisibility(View.VISIBLE);
+                                    ShowErrorPanelControls();
+                                    break;
+                                }
+                                if(mLecturerArrayList.size() == 0){
                                     Toast.makeText(this, "No Lecturer found!!!",
                                             Toast.LENGTH_LONG).show();
                                 }
 
-
-
-                            } else {
+                            } else
                                 finish();
-                                Toast.makeText(this, "Command not recognized", Toast.LENGTH_SHORT).show();
-                            }
+                            Toast.makeText(this, "Command not recognized", Toast.LENGTH_SHORT).show();
                         }
                         break;
                     }
@@ -487,6 +550,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
             }
         }
     }
+
 
     @SuppressLint("MissingSuperCall")
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -517,10 +581,13 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // Stop the Bluetooth chat services
-        if (mChatService != null) mChatService.stop();
+    public synchronized void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
     }
 
 }

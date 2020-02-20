@@ -1,63 +1,111 @@
 package com.lloydant.biotrac;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.Dialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContentValues;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.fgtit.User;
+import com.fgtit.data.wsq;
 import com.fgtit.fpcore.FPMatch;
+import com.fgtit.printer.DataUtils;
 import com.fgtit.reader.BluetoothReaderService;
+import com.fgtit.utils.DBHelper;
 import com.google.gson.Gson;
-import com.lloydant.biotrac.Repositories.implementations.EnrollFingerprintRepo;
 import com.lloydant.biotrac.helpers.FingerprintConverter;
-import com.lloydant.biotrac.presenters.EnrollFingerprintPresenter;
-import com.lloydant.biotrac.views.EnrollFingerprintActivityView;
 
-
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
-import static com.lloydant.biotrac.LecturerSearchActivity.LecturerActivity;
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
-import static com.lloydant.biotrac.StudentSearchActivity.StudentActivity;
-
-
-public class EnrollFingerprintActivity extends AppCompatActivity implements EnrollFingerprintActivityView {
+public class SDKTestActivity extends AppCompatActivity {
 
     // Debugging
-    public static final String TAG = "BluetoothReader";
+    //directory for saving the fingerprint images
+    private String sDirectory = "";
+    private static final String TAG = "BluetoothReader";
 
+    //default image size
+    public static final int IMG_WIDTH = 256;
+    public static final int IMG_HEIGHT = 288;
+    public static final int IMG_SIZE = IMG_WIDTH * IMG_HEIGHT;
+    public static final int WSQBUFSIZE = 200000;
 
     //other image size
     public static final int IMG200 = 200;
     public static final int IMG288 = 288;
     public static final int IMG360 = 360;
 
+    //definition of commands
+    private final static byte CMD_PASSWORD = 0x01;    //Password
+    private final static byte CMD_ENROLID = 0x02;        //Enroll in Device
+    private final static byte CMD_VERIFY = 0x03;        //Verify in Device
+    private final static byte CMD_IDENTIFY = 0x04;    //Identify in Device
+    private final static byte CMD_DELETEID = 0x05;    //Delete in Device
+    private final static byte CMD_CLEARID = 0x06;        //Clear in Device
 
-    private byte mCmdData[] = new byte[10240];
-
+    private final static byte CMD_ENROLHOST = 0x07;    //Enroll to Host
+    private final static byte CMD_CAPTUREHOST = 0x08;    //Caputre to Host
+    private final static byte CMD_MATCH = 0x09;        //Match
     private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
+    private final static byte CMD_GETCHAR = 0x31;       //GETDATA
 
 
+    private final static byte CMD_WRITEFPCARD = 0x0A;    //Write Card Data
+    private final static byte CMD_READFPCARD = 0x0B;    //Read Card Data
+    private final static byte CMD_CARDSN = 0x0E;        //Read Card Sn
+    private final static byte CMD_GETSN = 0x10;
+
+    private final static byte CMD_FPCARDMATCH = 0x13;   //
+
+    private final static byte CMD_WRITEDATACARD = 0x14;    //Write Card Data
+    private final static byte CMD_READDATACARD = 0x15;     //Read Card Data
+
+    private final static byte CMD_PRINTCMD = 0x20;        //Printer Print
+    private final static byte CMD_GETBAT = 0x21;
+    private final static byte CMD_UPCARDSN = 0x43;
+    private final static byte CMD_GET_VERSION = 0x22;        //Version
+
+    private byte mDeviceCmd = 0x00;
+    private boolean mIsWork = false;
+    private byte mCmdData[] = new byte[10240];
+    private int mCmdSize = 0;
+
+    private Timer mTimerTimeout = null;
+    private TimerTask mTaskTimeout = null;
+    private Handler mHandlerTimeout;
 
     // Message types sent from the BluetoothChatService Handler
     public static final int MESSAGE_STATE_CHANGE = 1;
@@ -74,97 +122,62 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     private static final int REQUEST_CONNECT_DEVICE = 1;
     private static final int REQUEST_ENABLE_BT = 2;
 
+    // Layout Views
+    private ListView mConversationView;
+    private ImageView fingerprintImage;
 
     // Name of the connected device
     private String mConnectedDeviceName = null;
+
     // String buffer for outgoing messages
     private StringBuffer mOutStringBuffer;
     // Local Bluetooth adapter
     private BluetoothAdapter mBluetoothAdapter = null;
     // Member object for the chat services
-    private BluetoothReaderService mChatService;
+    private BluetoothReaderService mChatService = null;
 
     //definition of variables which used for storing the fingerprint template
     public byte mRefData[] = new byte[512]; //enrolled FP template data
     public int mRefSize = 0;
+    public byte mMatData[] = new byte[512];  // match FP template data
+    public int mMatSize = 0;
+
+    public byte mCardSn[] = new byte[7];
+    public byte mCardData[] = new byte[4096];
+    public int mCardSize = 0;
+
+    public byte mBat[] = new byte[2];  // data of battery status
+    public byte mUpImage[] = new byte[73728]; // image data
+    public int mUpImageSize = 0;
+    public int mUpImageCount = 0;
 
 
-    private final static byte CMD_ENROLHOST = 0x07;    //Enroll to Host
+    public byte mRefCoord[] = new byte[512];
+    public byte mMatCoord[] = new byte[512];
 
-    private byte mDeviceCmd = 0x00;
-    private int mCmdSize = 0;
-    private boolean mIsWork = false;
+    public byte mIsoData[] = new byte[378];
 
+    private int userId; // User ID number
+    private SQLiteDatabase userDB; //SQLite database object
+    private ArrayList<User> mUsers = new ArrayList<>();
+    private FingerprintConverter mFingerprintConverter;
 
+    private Button connectBT, enrollFP, captureFP;
 
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
     private static String[] PERMISSIONS_STORAGE = {Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
-
-
-    private Dialog mEnrollmentSuccessfulDialog, mEnrollmentErrorDialog;
-    private Button ConnectBluetoothBtn, onEnrollmentSucess, onEnrollmentError;
-    private TextView DeviceName, errorMsg;
-    private ImageView backBtn;
-    private View StartPanel, BTSearchPanel, deviceInfoPanel, loadingPanel;
-    private TextView mUsernameTextView;
-    private String name;
-    private String token;
-    private String lecturerID, studentID;
-
-    private SharedPreferences mPreferences;
-    EnrollFingerprintPresenter mPresenter;
-
-
-    private FingerprintConverter mFingerprintConverter;
-
-    private Timer mTimerTimeout = null;
-    private TimerTask mTaskTimeout = null;
-    private Handler mHandlerTimeout;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_enroll_fingerprint);
+        setContentView(R.layout.activity_sdktest);
 
-        backBtn = findViewById(R.id.backBtn);
-        DeviceName = findViewById(R.id.deviceName);
-        ConnectBluetoothBtn = findViewById(R.id.searchBT);
-        StartPanel = findViewById(R.id.startPanel);
-        BTSearchPanel = findViewById(R.id.searchBtPanel);
-        loadingPanel = findViewById(R.id.loadingPanel);
-        deviceInfoPanel = findViewById(R.id.deviceInfoPanel);
-        mUsernameTextView = findViewById(R.id.username);
+        connectBT = findViewById(R.id.connectBT);
+        enrollFP = findViewById(R.id.enrollFP);
+        captureFP = findViewById(R.id.captureFP);
 
-        mEnrollmentSuccessfulDialog = new Dialog(this);
-        mEnrollmentSuccessfulDialog.setContentView(R.layout.enroll_success_dialog);
-        mEnrollmentSuccessfulDialog.setCanceledOnTouchOutside(false);
-        onEnrollmentSucess = mEnrollmentSuccessfulDialog.findViewById(R.id.doneBtn);
-        onEnrollmentSucess.setOnClickListener(view -> {
-            mEnrollmentSuccessfulDialog.dismiss();
-            finish();
-        });
-
-        mEnrollmentErrorDialog = new Dialog(this);
-        mEnrollmentErrorDialog.setContentView(R.layout.enroll_error_dialog);
-        mEnrollmentErrorDialog.setCanceledOnTouchOutside(false);
-        onEnrollmentError = mEnrollmentErrorDialog.findViewById(R.id.errorBtn);
-        errorMsg = mEnrollmentErrorDialog.findViewById(R.id.errorMsg);
-        onEnrollmentError.setOnClickListener(view -> {
-            StartPanel.setVisibility(View.VISIBLE);
-            mEnrollmentErrorDialog.dismiss();
-            SendCommand(CMD_ENROLHOST, null, 0);
-
-        });
-
-        ConnectBluetoothBtn.setOnClickListener(view -> {
-            // Launch the DeviceListActivity to see devices and do scan
-            Intent serverIntent = new Intent(EnrollFingerprintActivity.this, DeviceListActivity.class);
-            startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
-        });
 
         //checking the permission
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
@@ -175,13 +188,10 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
             }
         }
 
-
+        mFingerprintConverter = new FingerprintConverter(new Gson());
 
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        mFingerprintConverter = new FingerprintConverter(new Gson());
-        mPresenter = new EnrollFingerprintPresenter(new EnrollFingerprintRepo(), this);
 
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
@@ -198,15 +208,8 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
 
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
-        if (getIntent().getExtras().getString(LecturerActivity) != null){
-            name = getIntent().getExtras().getString("LecturerName", "Lecturer Name");
-
-        }else if (getIntent().getExtras().getString(StudentActivity) != null){
-            name = getIntent().getExtras().getString("StudentName", "Student Name");
-        }
-        token = mPreferences.getString("token", "Empty Token");
-        mUsernameTextView.setText("Hello " + name);
+        //initialize the SQLite
+        userId = 1;
     }
 
 
@@ -233,19 +236,18 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
                 case MESSAGE_STATE_CHANGE:
                     switch (msg.arg1) {
                         case BluetoothReaderService.STATE_CONNECTED:
-                            BTSearchPanel.setVisibility(View.GONE);
-                            StartPanel.setVisibility(View.VISIBLE);
-                            deviceInfoPanel.setVisibility(View.VISIBLE);
-                            DeviceName.setText(mConnectedDeviceName);
-                            SendCommand(CMD_ENROLHOST, null, 0);
+                            enrollFP.setVisibility(View.VISIBLE);
+                            captureFP.setVisibility(View.VISIBLE);
+
                             break;
                         case BluetoothReaderService.STATE_CONNECTING:
-                            Toast.makeText(EnrollFingerprintActivity.this, "Trying to connect...", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SDKTestActivity.this, "Bluetooth trying to connect...", Toast.LENGTH_SHORT).show();
                             break;
                         case BluetoothReaderService.STATE_LISTEN:
                         case BluetoothReaderService.STATE_NONE:
-                            BTSearchPanel.setVisibility(View.VISIBLE);
-                            StartPanel.setVisibility(View.GONE);
+                            enrollFP.setVisibility(View.GONE);
+                            captureFP.setVisibility(View.GONE);
+                            Toast.makeText(SDKTestActivity.this, "Bluetooth disconnected", Toast.LENGTH_SHORT).show();
                             break;
                     }
                     break;
@@ -279,7 +281,9 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         for (int i = 0; i < size; i++) {
             text = text + " " + Integer.toHexString(data[i] & 0xFF).toUpperCase() + "  ";
         }
+//        mConversationArrayAdapter.add(text);
     }
+
 
     @Override
     public synchronized void onResume() {
@@ -295,7 +299,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
             }
         }
     }
-
 
     /**
      * method of copying the byte[] data with specific length
@@ -325,12 +328,12 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         return (sum & 0x00ff);
     }
 
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         // Stop the Bluetooth chat services
         if (mChatService != null) mChatService.stop();
-        mPresenter.DestroyDisposables();
     }
 
     /**
@@ -338,6 +341,23 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
      */
     private void setupChat() {
         Log.d(TAG, "setupChat()");
+
+        // Initialize the array adapter for the conversation thread
+//        mConversationArrayAdapter = new ArrayAdapter<String>(this, R.layout.message);
+//        mConversationView = (ListView) findViewById(R.id.in);
+//        mConversationView.setAdapter(mConversationArrayAdapter);
+
+        fingerprintImage = (ImageView) findViewById(R.id.imageView1);
+
+        connectBT.setOnClickListener(view -> {
+            // Launch the DeviceListActivity to see devices and do scan
+            Intent serverIntent = new Intent(SDKTestActivity.this, DeviceListActivity.class);
+            startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
+        });
+
+        enrollFP.setOnClickListener(view -> SendCommand(CMD_ENROLHOST, null, 0));
+
+        captureFP.setOnClickListener(view -> SendCommand(CMD_CAPTUREHOST, null, 0));
 
         mChatService = new BluetoothReaderService(this, mHandler);    // Initialize the BluetoothChatService to perform bluetooth connections
         mOutStringBuffer = new StringBuffer("");                    // Initialize the buffer for outgoing messages
@@ -385,7 +405,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         }
     }
 
-
     /**
      * Generate the command package sending via bluetooth
      * @param cmdid command code for different function achieve.
@@ -424,10 +443,12 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
             case CMD_ENROLHOST:
                 Toast.makeText(this, "Enroll Template ...", Toast.LENGTH_SHORT).show();
                 break;
+            case CMD_CAPTUREHOST:
+                Toast.makeText(this, "Capture Template ...", Toast.LENGTH_SHORT).show();
+                break;
 
         }
     }
-
 
     /**
      * Received the response from the device
@@ -455,28 +476,73 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
                             if (mCmdData[7] == 1) {
                                 memcpy(mRefData, 0, mCmdData, 8, size);
                                 mRefSize = size;
-                                String JsonString = mFingerprintConverter.ByteToJsonString(mRefData);
+                                String temp = mFingerprintConverter.ByteToJsonString(mRefData);
+                                mUsers.add(new User(userId, temp));
 
-                                    //                            Send to database through graphQl
-                                    if (getIntent().getExtras().getString(LecturerActivity) != null) {
-                                        lecturerID = getIntent().getExtras().getString("LecturerID", "Lecturer ID");
+                                Toast.makeText(this, "Enrol Succeed with finger: " + userId, Toast.LENGTH_SHORT).show();
 
-//                                  finally, uploading it to the server
-                                        mPresenter.UploadLecturerFingerprint(token, lecturerID, JsonString);
-                                    } else if (getIntent().getExtras().getString(StudentActivity) != null) {
-                                        studentID = getIntent().getExtras().getString("StudentID", "Student ID");
-
-//                                  finally, uploading it to the server
-                                        mPresenter.UploadStudentFingerprint(token, studentID, JsonString);
-                                    }
-
-                                    loadingPanel.setVisibility(View.VISIBLE);
-                                    StartPanel.setVisibility(View.GONE);
+                                //save into database
+//                                ContentValues values = new ContentValues();
+//                                values.put(DBHelper.TABLE_USER_ID, userId);
+//                                values.put(DBHelper.TABLE_USER_ENROL1, mRefData);
+//                                userDB.insert(DBHelper.TABLE_USER, null, values);
+//                                AddStatusList("Enrol Succeed with finger: " + userId);
+                                userId += 1;
 
 
-                            }else  mEnrollmentErrorDialog.show();
-                            break;
+                            } else
+                                Toast.makeText(this, "Search Fail", Toast.LENGTH_SHORT).show();
+//                                AddStatusList();
                         }
+                        break;
+                        case CMD_CAPTUREHOST: {
+                            int size = (byte) (mCmdData[5]) + ((mCmdData[6] << 8) & 0xFF00) - 1;
+                            if (mCmdData[7] == 1) {
+                                memcpy(mMatData, 0, mCmdData, 8, size);
+                                mMatSize = size;
+
+                                boolean matchFlag = false;
+                                for (User user : mUsers){
+
+                                    byte[] enroll  = mFingerprintConverter.JsonToByteArray(user.getFingerprint());
+
+                                    int ret = FPMatch.getInstance().MatchFingerData(enroll,
+                                            mMatData);
+                                    if (ret > 70) {
+                                        Toast.makeText(this, "Match OK,Finger = " + user.getId() + "!!", Toast.LENGTH_SHORT).show();
+//                                        AddStatusList("Match OK,Finger = " + user.getId() + "!!");
+                                        matchFlag = true;
+                                        break;
+                                    }
+                                }
+//                                Cursor cursor = userDB.query(DBHelper.TABLE_USER, null, null,
+//                                        null, null, null, null, null);
+//                                boolean matchFlag = false;
+//                                while (cursor.moveToNext()) {
+//                                    int id = cursor.getInt(cursor.getColumnIndex(DBHelper
+//                                            .TABLE_USER_ID));
+//                                    byte[] enrol1 = cursor.getBlob(cursor.getColumnIndex(DBHelper
+//                                            .TABLE_USER_ENROL1));
+//                                    int ret = FPMatch.getInstance().MatchFingerData(enrol1,
+//                                            mMatData);
+//                                    if (ret > 70) {
+//                                        AddStatusList("Match OK,Finger = " + id + "!!");
+//                                        matchFlag = true;
+//                                        break;
+//                                    }
+//                                }
+                                if(!matchFlag){
+                                    Toast.makeText(this, "Match Fail!!", Toast.LENGTH_SHORT).show();
+//                                    AddStatusList("Match Fail !!");
+                                }
+                                if(mUsers.size() == 0){
+                                    Toast.makeText(this, "User list empty!!", Toast.LENGTH_SHORT).show();
+                                }
+
+                            } else
+                                Toast.makeText(this, "Search Fail!!", Toast.LENGTH_SHORT).show();
+                        }
+                        break;
                     }
                 }
             }
@@ -517,36 +583,9 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         super.onPause();
     }
 
-
     @Override
     public void onStop() {
         super.onStop();
     }
 
-
-    @Override
-    public void OnLecturerFingerprintUploaded(String message) {
-        loadingPanel.setVisibility(View.GONE);
-        mEnrollmentSuccessfulDialog.show();
-        mEnrollmentErrorDialog.dismiss();
-    }
-
-    @Override
-    public void OnStudentFingerprintUploaded(String message) {
-        loadingPanel.setVisibility(View.GONE);
-        mEnrollmentSuccessfulDialog.show();
-        mEnrollmentErrorDialog.dismiss();
-    }
-
-    @Override
-    public void OnFingerprintUploadFailed() {
-        errorMsg.setText("Fingerprint Upload not successful!");
-        mEnrollmentErrorDialog.show();
-    }
-
-    @Override
-    public void OnFingerprintUploadError(Throwable e) {
-        errorMsg.setText("Error: " + e.getMessage());
-        mEnrollmentErrorDialog.show();
-    }
 }
