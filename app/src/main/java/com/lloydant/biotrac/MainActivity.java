@@ -20,6 +20,7 @@ import com.google.gson.Gson;
 import com.lloydant.biotrac.Repositories.implementations.MainActivityRepo;
 import com.lloydant.biotrac.helpers.NetworkCheck;
 import com.lloydant.biotrac.helpers.StorageHelper;
+import com.lloydant.biotrac.models.Coursemate;
 import com.lloydant.biotrac.models.DepartmentalCourse;
 import com.lloydant.biotrac.models.Student;
 import com.lloydant.biotrac.presenters.MainActivityPresenter;
@@ -140,10 +141,10 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
 
 
     @Override
-    public void OnGetCourseMates(ArrayList<Student> studentArrayList) {
+    public void OnGetCourseMates(ArrayList<Coursemate> coursemates) {
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String studentID = mPreferences.getString("id", "Student ID");
-        String jsonString = new Gson().toJson(studentArrayList);
+        String jsonString = new Gson().toJson(coursemates);
         mLoaderView.setVisibility(View.GONE);
         Toast.makeText(this, mStorageHelper.saveJsonFile("CourseMates",jsonString,studentID), Toast.LENGTH_SHORT).show();
 

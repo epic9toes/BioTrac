@@ -65,8 +65,8 @@ public class StudentListAdapter extends RecyclerView.Adapter<StudentListAdapter.
             super(itemView);
             userImg  = itemView.findViewById(R.id.userImg);
             username = itemView.findViewById(R.id.username);
-            department  = itemView.findViewById(R.id.department);
-            regNo = itemView.findViewById(R.id.regNo);
+            department  = itemView.findViewById(R.id.stdDepartment);
+            regNo = itemView.findViewById(R.id.stdRegNo);
             this.onStudentListener = onStudentListener;
 
             itemView.setOnClickListener(this);

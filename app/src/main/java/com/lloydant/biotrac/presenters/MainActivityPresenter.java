@@ -6,9 +6,11 @@ import com.lloydant.biotrac.GetRegisteredCoursesQuery;
 import com.lloydant.biotrac.Repositories.implementations.MainActivityRepo;
 import com.lloydant.biotrac.fragment.StudentFragment;
 import com.lloydant.biotrac.models.Course;
+import com.lloydant.biotrac.models.Coursemate;
 import com.lloydant.biotrac.models.Department;
 import com.lloydant.biotrac.models.DepartmentalCourse;
 import com.lloydant.biotrac.models.Lecturer;
+import com.lloydant.biotrac.models.RegisteredCourse;
 import com.lloydant.biotrac.models.Session;
 import com.lloydant.biotrac.models.Student;
 import com.lloydant.biotrac.views.MainActivityView;
@@ -38,16 +40,20 @@ public class MainActivityPresenter {
                     public void onNext(Response<GetCoursemateQuery.Data> dataResponse) {
                     if (dataResponse.data().GetCoursemate().docs() != null){
                         List<GetCoursemateQuery.Doc> doc = dataResponse.data().GetCoursemate().docs();
-                        ArrayList<Student> arrayList = new ArrayList<>();
+                        ArrayList<Coursemate> coursemateArrayList = new ArrayList<>();
+                        ArrayList<RegisteredCourse> registeredCourses = null;
 
-                        for (GetCoursemateQuery.Doc student : doc){
-                            StudentFragment fragment = student.fragments().studentFragment();
-                            arrayList.add(new Student(fragment.id(),fragment.name(),fragment.phone(),
-                                    fragment.email(),fragment.fingerprint(),fragment.image(),fragment.reg_no(),fragment.level()
-                            , new Department(fragment.department().fragments().departmentFragment().id(),
-                                    fragment.department().fragments().departmentFragment().name()), ""));
+                        for (GetCoursemateQuery.Doc coursemate : doc){
+
+                            registeredCourses = new ArrayList<>();
+                            for (GetCoursemateQuery.Registered_course registered_course : coursemate.registered_courses()) {
+                                registeredCourses.add(new RegisteredCourse(registered_course.id()));
+                            }
+                            coursemateArrayList.add( new Coursemate(coursemate.id(),coursemate.name(),coursemate.fingerprint(),
+                                    coursemate.image(), coursemate.reg_no(), coursemate.level(), new Department(coursemate.department().id(),
+                                    coursemate.department().name()),registeredCourses));
                         }
-                        mView.OnGetCourseMates(arrayList);
+                        mView.OnGetCourseMates(coursemateArrayList);
                     } else mView.OnGetEmptyCourseMates();
                     }
 

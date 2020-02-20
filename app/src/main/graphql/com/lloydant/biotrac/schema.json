@@ -2874,7 +2874,7 @@
             "deprecationReason": null
           },
           {
-            "name": "assigned_courses",
+            "name": "registered_courses",
             "description": "Assigned departmental course",
             "args": [],
             "type": {

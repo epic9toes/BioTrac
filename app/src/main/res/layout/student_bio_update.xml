@@ -59,7 +59,7 @@
                 android:layout_marginBottom="5dp"/>
 
             <TextView
-                android:id="@+id/department"
+                android:id="@+id/stdDepartment"
                 android:layout_below="@id/username"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -69,8 +69,8 @@
                 android:layout_marginBottom="5dp"/>
 
             <TextView
-                android:id="@+id/regNo"
-                android:layout_below="@id/department"
+                android:id="@+id/stdRegNo"
+                android:layout_below="@id/stdDepartment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Esut/2001/02365"
@@ -83,7 +83,7 @@
                 android:id="@+id/reason"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
-                android:layout_below="@id/regNo"
+                android:layout_below="@id/stdRegNo"
                 android:inputType="textMultiLine"
                 android:hint="Why do you want to update fingerprint?"
                 android:layout_marginTop="5dp"
