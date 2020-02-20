@@ -29,23 +29,6 @@ public class SDKUniversalEndPoints {
     private BluetoothAdapter mBluetoothAdapter;
     BluetoothReaderService mChatService;
 
-    private final static byte CMD_ENROLHOST = 0x07;    //Enroll to Host
-    private final static byte CMD_CAPTUREHOST = 0x08;    //Caputre to Host
-    private final static byte CMD_MATCH = 0x09;        //Match
-    private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
-    private final static byte CMD_GETCHAR = 0x31;       //GETDATA
-
-
-    private final static byte CMD_CARDSN = 0x0E;        //Read Card Sn
-    private final static byte CMD_GETSN = 0x10;
-
-    private final static byte CMD_FPCARDMATCH = 0x13;   //
-
-    private final static byte CMD_GETBAT = 0x21;
-    private final static byte CMD_GET_VERSION = 0x22;        //Version
-    //definition of commands
-    private final static byte CMD_PASSWORD = 0x01;    //Password
-
 
     public byte mUpImage[] = new byte[73728]; // image data
     private byte mCmdData[] = new byte[10240];

@@ -31,6 +31,7 @@ import com.fgtit.reader.BluetoothReaderService;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lloydant.biotrac.Repositories.implementations.AttendanceRepo;
+import com.lloydant.biotrac.helpers.FingerprintConverter;
 import com.lloydant.biotrac.helpers.NetworkCheck;
 import com.lloydant.biotrac.helpers.StorageHelper;
 import com.lloydant.biotrac.models.AttendanceObj;
@@ -40,11 +41,12 @@ import com.lloydant.biotrac.models.RegisteredCourse;
 import com.lloydant.biotrac.presenters.AttendanceActivityPresenter;
 import com.lloydant.biotrac.views.AttendanceActivityView;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.lloydant.biotrac.MainActivity.USER_PREF;
 
@@ -76,7 +78,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     public static final int MESSAGE_DEVICE_NAME = 4;
     public static final int MESSAGE_TOAST = 5;
 
-    SDKUniversalEndPoints sdkUniversalEndPoints;
 
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
@@ -129,10 +130,15 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     boolean attendanceEnded = false;
 
 
+    private Timer mTimerTimeout = null;
+    private TimerTask mTaskTimeout = null;
+    private Handler mHandlerTimeout;
+
     String date = "";
     String time = "";
     private NetworkCheck mNetworkCheck;
     private AttendanceActivityPresenter mPresenter;
+    private FingerprintConverter mFingerprintConverter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -156,7 +162,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
 
 //        when clicked attendance is concluded
         finishAttendanceBtn.setOnClickListener(view -> {
-//            attendanceEnded = true;
             LecturerAuthorization();
             CaptureDelay();
 //            AttendanceDone();
@@ -215,12 +220,9 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
             }
         }
 
-
-
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        sdkUniversalEndPoints = new SDKUniversalEndPoints(mBluetoothAdapter, mChatService);
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
             Toast.makeText(this, "Bluetooth is not available", Toast.LENGTH_LONG).show();
@@ -239,11 +241,10 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         studentID = mPreferences.getString("id", "Student ID");
         token = mPreferences.getString("token", "token");
-
+        mFingerprintConverter = new FingerprintConverter(new Gson());
         GetStudents();
 
     }
-
 
     @Override
     public void onStart() {
@@ -256,46 +257,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
             // Otherwise, setup the chat session
         } else {
             if (mChatService == null) setupChat();
-        }
-    }
-
-
-    /**
-     * Generate the command package sending via bluetooth
-     * @param cmdid command code for different function achieve.
-     * @param data the required data need to send to the device
-     * @param size the size of the byte[] data
-     */
-    public void SendCommand(byte cmdid, byte[] data, int size) {
-        if (mIsWork) return;
-
-        int sendsize = 9 + size;
-        byte[] sendbuf = new byte[sendsize];
-        sendbuf[0] = 'F';
-        sendbuf[1] = 'T';
-        sendbuf[2] = 0;
-        sendbuf[3] = 0;
-        sendbuf[4] = cmdid;
-        sendbuf[5] = (byte) (size);
-        sendbuf[6] = (byte) (size >> 8);
-        if (size > 0) {
-            for (int i = 0; i < size; i++) {
-                sendbuf[7 + i] = data[i];
-            }
-        }
-        int sum = sdkUniversalEndPoints.calcCheckSum(sendbuf, (7 + size));
-        sendbuf[7 + size] = (byte) (sum);
-        sendbuf[8 + size] = (byte) (sum >> 8);
-
-        mIsWork = true;
-        sdkUniversalEndPoints.TimeOutStart();
-        mDeviceCmd = cmdid;
-        mCmdSize = 0;
-        mChatService.write(sendbuf);
-
-        switch (sendbuf[4]) {
-            case CMD_CAPTUREHOST:
-                break;
         }
     }
 
@@ -330,7 +291,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                     byte[] readBuf = (byte[]) msg.obj;
                     if (readBuf.length > 0) {
                         if (readBuf[0] == (byte) 0x1b) {
-                            sdkUniversalEndPoints.AddStatusListHex(readBuf, msg.arg1);
+                            AddStatusListHex(readBuf, msg.arg1);
                         } else {
                             ReceiveCommand(readBuf, msg.arg1);
                         }
@@ -339,7 +300,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                 case MESSAGE_DEVICE_NAME:
                     // save the connected device's name
                     mConnectedDeviceName = msg.getData().getString(DEVICE_NAME);
-
                     Toast.makeText(getApplicationContext(), "Connected to " + mConnectedDeviceName, Toast.LENGTH_SHORT).show();
                     break;
                 case MESSAGE_TOAST:
@@ -348,6 +308,13 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
             }
         }
     };
+
+    private void AddStatusListHex(byte[] data, int size) {
+        String text = "";
+        for (int i = 0; i < size; i++) {
+            text = text + " " + Integer.toHexString(data[i] & 0xFF).toUpperCase() + "  ";
+        }
+    }
 
     @Override
     public synchronized void onResume() {
@@ -364,6 +331,42 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         }
     }
 
+    /**
+     * method of copying the byte[] data with specific length
+     * @param dstbuf byte[] for storing the copied data with specific length
+     * @param dstoffset the starting point for storing
+     * @param srcbuf the source byte[] used for copying.
+     * @param srcoffset the starting point for copying
+     * @param size the length required to copy
+     */
+    private void memcpy(byte[] dstbuf, int dstoffset, byte[] srcbuf, int srcoffset, int size) {
+        for (int i = 0; i < size; i++) {
+            dstbuf[dstoffset + i] = srcbuf[srcoffset + i];
+        }
+    }
+
+    /**
+     * calculate the check sum of the byte[]
+     * @param buffer byte[] required for calculating
+     * @param size the size of the byte[]
+     * @return the calculated check sum
+     */
+    private int calcCheckSum(byte[] buffer, int size) {
+        int sum = 0;
+        for (int i = 0; i < size; i++) {
+            sum = sum + buffer[i];
+        }
+        return (sum & 0x00ff);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Stop the Bluetooth chat services
+        if (mChatService != null) mChatService.stop();
+        mPresenter.DestroyDisposables();
+    }
+
 
     /**
      * configure for the UI components
@@ -371,11 +374,95 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     private void setupChat() {
         Log.d(TAG, "setupChat()");
 
-
-        mChatService = new BluetoothReaderService(this, mHandler);
-        mOutStringBuffer = new StringBuffer("");   // Initialize the buffer for outgoing messages
+        mChatService = new BluetoothReaderService(this, mHandler);    // Initialize the BluetoothChatService to perform bluetooth connections
+        mOutStringBuffer = new StringBuffer("");                    // Initialize the buffer for outgoing messages
     }
 
+    /**
+     * stat the timer for counting
+     */
+    public void TimeOutStart() {
+        if (mTimerTimeout != null) {
+            return;
+        }
+        mTimerTimeout = new Timer();
+        mHandlerTimeout = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                TimeOutStop();
+                if (mIsWork) {
+                    mIsWork = false;
+                    //AddStatusList("Time Out");
+                }
+                super.handleMessage(msg);
+            }
+        };
+        mTaskTimeout = new TimerTask() {
+            @Override
+            public void run() {
+                Message message = new Message();
+                message.what = 1;
+                mHandlerTimeout.sendMessage(message);
+            }
+        };
+        mTimerTimeout.schedule(mTaskTimeout, 10000, 10000);
+    }
+
+    /**
+     * stop the timer
+     */
+    public void TimeOutStop() {
+        if (mTimerTimeout != null) {
+            mTimerTimeout.cancel();
+            mTimerTimeout = null;
+            mTaskTimeout.cancel();
+            mTaskTimeout = null;
+        }
+    }
+
+
+
+    /**
+     * Generate the command package sending via bluetooth
+     * @param cmdid command code for different function achieve.
+     * @param data the required data need to send to the device
+     * @param size the size of the byte[] data
+     */
+    private void SendCommand(byte cmdid, byte[] data, int size) {
+        if (mIsWork) return;
+
+        int sendsize = 9 + size;
+        byte[] sendbuf = new byte[sendsize];
+        sendbuf[0] = 'F';
+        sendbuf[1] = 'T';
+        sendbuf[2] = 0;
+        sendbuf[3] = 0;
+        sendbuf[4] = cmdid;
+        sendbuf[5] = (byte) (size);
+        sendbuf[6] = (byte) (size >> 8);
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                sendbuf[7 + i] = data[i];
+            }
+        }
+        int sum = calcCheckSum(sendbuf, (7 + size));
+        sendbuf[7 + size] = (byte) (sum);
+        sendbuf[8 + size] = (byte) (sum >> 8);
+
+        mIsWork = true;
+        TimeOutStart();
+        mDeviceCmd = cmdid;
+        mCmdSize = 0;
+        mChatService.write(sendbuf);
+
+        switch (sendbuf[4]) {
+
+            case CMD_CAPTUREHOST:
+                Toast.makeText(this, "Capture Template ...", Toast.LENGTH_SHORT).show();
+                break;
+
+        }
+    }
 
     /**
      * Received the response from the device
@@ -384,78 +471,84 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
      */
     private void ReceiveCommand(byte[] databuf, int datasize) {
         if (mDeviceCmd == CMD_GETIMAGE) { //receiving the image data from the device
-
-            if (sdkUniversalEndPoints.ConvertFingerprintToImage(imgSize,IMG200,IMG288,IMG360,databuf,datasize) != null){
-//                fingerprintImage.setImageBitmap(sdkUniversalEndPoints.ConvertFingerprintToImage(imgSize,IMG200,IMG288,IMG360,databuf,datasize));
-            }
-
+            Toast.makeText(this, "This is for image convertion", Toast.LENGTH_SHORT).show();
         } else { //other data received from the device
             // append the databuf received into mCmdData.
-            sdkUniversalEndPoints.memcpy(mCmdData, mCmdSize, databuf, 0, datasize);
+            memcpy(mCmdData, mCmdSize, databuf, 0, datasize);
             mCmdSize = mCmdSize + datasize;
             int totalsize = (byte) (mCmdData[5]) + ((mCmdData[6] << 8) & 0xFF00) + 9;
             if (mCmdSize >= totalsize) {
                 mCmdSize = 0;
                 mIsWork = false;
-                sdkUniversalEndPoints.TimeOutStop();
+                TimeOutStop();
 
                 //parsing the mCmdData
                 if ((mCmdData[0] == 'F') && (mCmdData[1] == 'T')) {
                     switch (mCmdData[4]) {
-
                         case CMD_CAPTUREHOST: {
                             int size = (byte) (mCmdData[5]) + ((mCmdData[6] << 8) & 0xFF00) - 1;
-
-
                             if (mCmdData[7] == 1 && !mAuthorizeDialog.isShowing()) {
-                                sdkUniversalEndPoints.memcpy(mMatData, 0, mCmdData, 8, size);
+                                memcpy(mMatData, 0, mCmdData, 8, size);
                                 mMatSize = size;
+
                                 String name = null;
                                 String department = null;
                                 String regNo = null;
                                 String image = null;
 
-                                    for (AttendanceStudentObj attendanceStudentObj : mAttendanceStudentObjs){
-                                        byte[] decodeBase64 = android.util.Base64.decode(attendanceStudentObj.getFingerprint(),
-                                                android.util.Base64.DEFAULT);
-                                        int ret = FPMatch.getInstance().MatchFingerData(decodeBase64,
+                                boolean matchFlag = false;
+                                for (AttendanceStudentObj attendanceStudentObj : mAttendanceStudentObjs){
+
+                                    byte[] enroll;
+                                    int ret = 0;
+                                    if (attendanceStudentObj.getFingerprint() != null){
+                                        enroll  = mFingerprintConverter.JsonToByteArray(attendanceStudentObj.getFingerprint());
+                                        ret = FPMatch.getInstance().MatchFingerData(enroll,
                                                 mMatData);
-                                        if (ret > 70) {
-
-                                            for (Coursemate coursemate : coursemates){
-                                                if (coursemate.getId().contains(attendanceStudentObj.getStudent())){
-                                                    name = coursemate.getName();
-                                                    department  = coursemate.getDepartment().getName();
-                                                    regNo = coursemate.getReg_no();
-                                                    image = coursemate.getImage();
-                                                    attendanceStudentObj.setPresent(true);
-                                                    break;
-                                                }
-                                            }
-
-                                            stdUsername.setText(name);
-                                            stdDepartment.setText(department);
-                                            stdRegNo.setText(regNo);
-                                          passedStudent.setVisibility(View.VISIBLE);
-                                        }
                                     }
+                                    if (ret > 70) {
 
-                                    if (name == null){
-                                    passedStudent.setVisibility(View.GONE);
-                                  Toast toast = Toast.makeText(this, "Fingerprint did not match!",
-                                            Toast.LENGTH_SHORT);
-                                  TextView v  = toast.getView().findViewById(android.R.id.message);
-                                  v.setTextColor(Color.RED);
-                                  v.setTextSize(18f);
-                                  toast.show();
+                                        for (Coursemate coursemate : coursemates){
+                                            if (coursemate.getId().contains(attendanceStudentObj.getStudent())){
+                                                name = coursemate.getName();
+                                                department  = coursemate.getDepartment().getName();
+                                                regNo = coursemate.getReg_no();
+                                                image = coursemate.getImage();
+                                                attendanceStudentObj.setPresent(true);
+                                                matchFlag = true;
+                                                break;
+                                            }
+                                        }
+
+                                        stdUsername.setText(name);
+                                        stdDepartment.setText(department);
+                                        stdRegNo.setText(regNo);
+                                        passedStudent.setVisibility(View.VISIBLE);
+                                    }
+                                    CaptureDelay();
                                 }
-                                CaptureDelay();
+                                if(!matchFlag){
+                                    passedStudent.setVisibility(View.GONE);
+                                    Toast toast = Toast.makeText(this, "Fingerprint did not match!",
+                                            Toast.LENGTH_SHORT);
+                                    TextView v  = toast.getView().findViewById(android.R.id.message);
+                                    v.setTextColor(Color.RED);
+                                    v.setTextSize(18f);
+                                    toast.show();
+                                    CaptureDelay();
+                                }
 
-                            }else if (mCmdData[7] == 1 && mAuthorizeDialog.isShowing()){
-                                sdkUniversalEndPoints.memcpy(mMatData, 0, mCmdData, 8, size);
+
+                            } else if (mCmdData[7] == 1 && mAuthorizeDialog.isShowing()){
+                                memcpy(mMatData, 0, mCmdData, 8, size);
                                 mMatSize = size;
-                                byte[] decodeBase64 = android.util.Base64.decode(LecturerFingerprint, android.util.Base64.DEFAULT);
-                                int ret = FPMatch.getInstance().MatchFingerData(decodeBase64,mMatData);
+                                byte[] enroll;
+                                int ret = 0;
+                                if (LecturerFingerprint != null){
+                                    enroll  = mFingerprintConverter.JsonToByteArray(LecturerFingerprint);
+                                    ret = FPMatch.getInstance().MatchFingerData(enroll,
+                                            mMatData);
+                                }
                                 if (ret > 70) {
                                     mAuthorizeDialog.dismiss();
                                     Toast.makeText(this, "Attendance ended successfully!", Toast.LENGTH_SHORT).show();
@@ -465,8 +558,8 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                                     ShowErrorPanelControls();
                                 }
 
-                            } else {
-                              Toast toast = Toast.makeText(this, "Timeout, Please place your finger on the scanner", Toast.LENGTH_SHORT);
+                            }  else{
+                                Toast toast = Toast.makeText(this, "Timeout, Please place your finger on the scanner", Toast.LENGTH_SHORT);
                                 TextView v  = toast.getView().findViewById(android.R.id.message);
                                 v.setTextColor(Color.RED);
                                 v.setTextSize(18f);
@@ -476,7 +569,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                         }
                         break;
                     }
-
                 }
             }
         }
@@ -509,14 +601,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                 }
         }
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // Stop the Bluetooth chat services
-        if (mChatService != null) mChatService.stop();
-    }
-
 
 //    This method build an object of student list registered for the selected course
     void GetStudents(){

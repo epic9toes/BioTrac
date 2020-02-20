@@ -40,17 +40,7 @@ public class FPMatch {
      * @param output output template byte array.
      */
     public void ToStd(byte[] input, byte[] output) {
-        switch (Conversions.getInstance().GetDataType(input)) {
-            case 1: {
-                System.arraycopy(input, 0, output, 0, 512);
-            }
-            case 2: {
-                Conversions.getInstance().IsoToStd(1, input, output);
-            }
-            case 3: {
-                Conversions.getInstance().IsoToStd(2, input, output);
-            }
-        }
+        ConversionsEx.getInstance().AnsiIsoToStd(input,output,ConversionsEx.ISO_19794_2005);
     }
 
 

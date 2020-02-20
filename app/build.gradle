@@ -12,8 +12,8 @@ android {
         versionName "1.0"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        ndk{
-            abiFilters "arm64-v8a","armeabi","armeabi-v7a"
+        ndk {
+            abiFilters "arm64-v8a", "armeabi", "armeabi-v7a"
         }
     }
     buildTypes {
@@ -30,7 +30,7 @@ android {
     apollo {
         generateKotlinModels.set(false) // or false for Java models
         customTypeMapping = [
-                "Upload" : "com.apollographql.apollo.api.FileUpload"
+                "Upload": "com.apollographql.apollo.api.FileUpload"
         ]
     }
 }
