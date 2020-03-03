@@ -8,13 +8,17 @@ import com.lloydant.biotrac.Repositories.IEnrollFingerprintRepository;
 import com.lloydant.biotrac.UpdateSingleLecturerBiometricMutation;
 import com.lloydant.biotrac.UpdateSingleStudentBiometricMutation;
 
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class EnrollFingerprintRepo implements IEnrollFingerprintRepository {
 
-
+    @Inject
+    public EnrollFingerprintRepo() {
+    }
 
     @Override
     public Observable<Response<UpdateSingleLecturerBiometricMutation.Data>> UploadLecturerFingerprint(String id, String template, String token) {

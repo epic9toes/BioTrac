@@ -7,11 +7,18 @@ import com.lloydant.biotrac.ApolloConnector;
 import com.lloydant.biotrac.GetLecturerByNoQuery;
 import com.lloydant.biotrac.Repositories.ILecturerBioUpdateRepository;
 
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class LecturerBioUpdateRepo implements ILecturerBioUpdateRepository {
+
+    @Inject
+    public LecturerBioUpdateRepo() {
+    }
+
     @Override
     public Observable<Response<GetLecturerByNoQuery.Data>> FindLecturerByNo(String no, String token) {
         ApolloCall<GetLecturerByNoQuery.Data> apolloCall = ApolloConnector.setupApollo(token).query(new GetLecturerByNoQuery(no));

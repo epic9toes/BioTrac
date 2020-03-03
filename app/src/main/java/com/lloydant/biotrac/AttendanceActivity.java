@@ -31,6 +31,7 @@ import com.fgtit.reader.BluetoothReaderService;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lloydant.biotrac.Repositories.implementations.AttendanceRepo;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.helpers.FingerprintConverter;
 import com.lloydant.biotrac.helpers.NetworkCheck;
 import com.lloydant.biotrac.helpers.StorageHelper;
@@ -38,17 +39,27 @@ import com.lloydant.biotrac.models.AttendanceObj;
 import com.lloydant.biotrac.models.AttendanceStudentObj;
 import com.lloydant.biotrac.models.Coursemate;
 import com.lloydant.biotrac.models.RegisteredCourse;
+import com.lloydant.biotrac.models.UploadStudentObj;
 import com.lloydant.biotrac.presenters.AttendanceActivityPresenter;
 import com.lloydant.biotrac.views.AttendanceActivityView;
+import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.lloydant.biotrac.MainActivity.USER_PREF;
+import javax.inject.Inject;
+
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_DEVICE_NAME;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_READ;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_STATE_CHANGE;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_TOAST;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_WRITE;
+
 
 public class AttendanceActivity extends AppCompatActivity  implements AttendanceActivityView {
 
@@ -71,14 +82,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     private static final int REQUEST_ENABLE_BT = 2;
 
 
-    // Message types sent from the BluetoothChatService Handler
-    public static final int MESSAGE_STATE_CHANGE = 1;
-    public static final int MESSAGE_READ = 2;
-    public static final int MESSAGE_WRITE = 3;
-    public static final int MESSAGE_DEVICE_NAME = 4;
-    public static final int MESSAGE_TOAST = 5;
-
-
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
     private static String[] PERMISSIONS_STORAGE = {Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -94,10 +97,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
     private final static byte CMD_CAPTUREHOST = 0x08;    //Caputre to Host
 
-    private View fingerPanel, searchBtPanel, startAttendancePanel;
-    private Button searchBT, btnStartAttendance, finishAttendanceBtn;
-
-
     // Key names received from the BluetoothChatService Handler
     public static final String DEVICE_NAME = "device_name";
     public static final String TOAST = "toast";
@@ -105,26 +104,44 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     // Debugging
     public static final String TAG = "BluetoothReader";
 
-    private int imgSize;
+    private View fingerPanel, searchBtPanel, startAttendancePanel;
+    private Button searchBT, btnStartAttendance, finishAttendanceBtn;
 
-    //other image size
-    public static final int IMG200 = 200;
-    public static final int IMG288 = 288;
-    public static final int IMG360 = 360;
+
+
 
     //definition of variables which used for storing the fingerprint template
     public byte mMatData[] = new byte[512];  // match FP template
     public int mMatSize = 0;
 
-    private SharedPreferences mPreferences;
-    private StorageHelper mStorageHelper;
+    @Inject
+    SharedPreferences mPreferences;
+
+    @Inject
+    StorageHelper mStorageHelper;
+
+    @Inject
+    NetworkCheck mNetworkCheck;
+
+    @Inject
+    AttendanceRepo mAttendanceRepo;
+
+    @Inject
+    FingerprintConverter mFingerprintConverter;
+
+    @Inject
+    Gson mGson;
+
+    @Inject
+    Picasso mPicasso;
+
     private ArrayList<AttendanceStudentObj> mAttendanceStudentObjs = new ArrayList<>();
     private ArrayList<Coursemate> coursemates =  new ArrayList<>();
 
 
-    private Dialog mAuthorizeDialog;
-    private TextView mErrorMsg;
-    private Button mTryAgainButton, mCancelButton;
+    private Dialog mAuthorizeDialog, SummaryDialog;
+    private TextView mErrorMsg, totalCount, presentCount, absentCount;
+    private Button mTryAgainButton, mCancelButton, closeSummary;
     private TextView stdUsername, stdDepartment, stdRegNo;
     private AppCompatImageView stdUserImg;
     boolean attendanceEnded = false;
@@ -136,15 +153,20 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
 
     String date = "";
     String time = "";
-    private NetworkCheck mNetworkCheck;
     private AttendanceActivityPresenter mPresenter;
-    private FingerprintConverter mFingerprintConverter;
+
+    private View mLoading;
+    String filename = "";
+    String jsonString = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_attendance);
 
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
+
+        mLoading = findViewById(R.id.loading);
         username = findViewById(R.id.username);
         courseCode = findViewById(R.id.courseCode);
         courseTitle = findViewById(R.id.courseTitle);
@@ -158,13 +180,13 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         btnStartAttendance = findViewById(R.id.btnStartAttendance);
         finishAttendanceBtn = findViewById(R.id.finishAttendanceBtn);
         mAuthorizeDialog = new Dialog(this);
+        SummaryDialog = new Dialog(this);
         mErrorMsg = mAuthorizeDialog.findViewById(R.id.errorMsg);
 
 //        when clicked attendance is concluded
         finishAttendanceBtn.setOnClickListener(view -> {
             LecturerAuthorization();
             CaptureDelay();
-//            AttendanceDone();
         });
 
 //        Views to display when student identifies successfully
@@ -179,7 +201,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
             passedStudent.setVisibility(View.GONE);
             startAttendancePanel.setVisibility(View.GONE);
             mIsWork = false;
-//            sdkUniversalEndPoints.TimeOutStop();
             SendCommand(CMD_CAPTUREHOST, null, 0);
         });
 
@@ -189,9 +210,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
             startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
         });
 
-        mPresenter = new AttendanceActivityPresenter(this, new AttendanceRepo());
-        mNetworkCheck = new NetworkCheck(this);
-        mStorageHelper = new StorageHelper(this);
+        mPresenter = new AttendanceActivityPresenter(this, mAttendanceRepo);
 
         Date today = Calendar.getInstance().getTime();//getting date
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
@@ -238,10 +257,8 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
 
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         studentID = mPreferences.getString("id", "Student ID");
         token = mPreferences.getString("token", "token");
-        mFingerprintConverter = new FingerprintConverter(new Gson());
         GetStudents();
 
     }
@@ -366,7 +383,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         if (mChatService != null) mChatService.stop();
         mPresenter.DestroyDisposables();
     }
-
 
     /**
      * configure for the UI components
@@ -494,7 +510,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                                 String name = null;
                                 String department = null;
                                 String regNo = null;
-                                String image = null;
+                                String image;
 
                                 boolean matchFlag = false;
                                 for (AttendanceStudentObj attendanceStudentObj : mAttendanceStudentObjs){
@@ -514,6 +530,13 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                                                 department  = coursemate.getDepartment().getName();
                                                 regNo = coursemate.getReg_no();
                                                 image = coursemate.getImage();
+
+                                                mPicasso.get()
+                                                        .load(image)
+                                                        .placeholder(R.drawable.avatar)
+                                                        .error(R.drawable.avatar)
+                                                        .into(stdUserImg);
+
                                                 attendanceStudentObj.setPresent(true);
                                                 matchFlag = true;
                                                 break;
@@ -552,7 +575,17 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                                 if (ret > 70) {
                                     mAuthorizeDialog.dismiss();
                                     Toast.makeText(this, "Attendance ended successfully!", Toast.LENGTH_SHORT).show();
-                                    AttendanceDone();
+
+//                                    Building attendance summary analysis
+                                    int presentStd = 0;
+                                    int absentStd = 0;
+
+                                    for (AttendanceStudentObj attendanceObj : mAttendanceStudentObjs){
+                                        if (attendanceObj.isPresent()){
+                                            presentStd++;
+                                        }else absentStd++;
+                                    }
+                                    ShowAttendanceSummary(mAttendanceStudentObjs.size() + "", presentStd + "",absentStd + "");
                                 } else {
                                     mErrorMsg.setVisibility(View.VISIBLE);
                                     ShowErrorPanelControls();
@@ -604,7 +637,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
 
 //    This method build an object of student list registered for the selected course
     void GetStudents(){
-        coursemates = new Gson().fromJson(mStorageHelper.readJsonFile(studentID,
+        coursemates = mGson.fromJson(mStorageHelper.readJsonFile(studentID,
                 "CourseMates.json"), new TypeToken<ArrayList<Coursemate>>(){}.getType());
         for (Coursemate coursemate: coursemates){
             for (RegisteredCourse registeredCourse : coursemate.getRegisteredCourses()){
@@ -616,6 +649,25 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         }
     }
 
+    void ShowAttendanceSummary(String total, String present, String absent){
+        SummaryDialog.setContentView(R.layout.attendance_summary);
+        SummaryDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        SummaryDialog.setCanceledOnTouchOutside(false);
+        totalCount = SummaryDialog.findViewById(R.id.totalCount);
+        totalCount.setText(total);
+        presentCount = SummaryDialog.findViewById(R.id.presentCount);
+        presentCount.setText(present);
+        absentCount = SummaryDialog.findViewById(R.id.absentCount);
+        absentCount.setText(absent);
+
+        closeSummary = SummaryDialog.findViewById(R.id.doneBtn);
+        closeSummary.setOnClickListener(view -> {
+            AttendanceDone();
+            SummaryDialog.dismiss();
+        });
+        SummaryDialog.show();
+    }
+
     void CaptureDelay(){
         new Handler().postDelayed(() -> SendCommand(CMD_CAPTUREHOST, null, 0),1000);
     }
@@ -623,22 +675,36 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
 
 // building the final attendance object after attendance has been ended
     void AttendanceDone(){
-        ArrayList<AttendanceStudentObj> students =  new ArrayList<>();
-        for (AttendanceStudentObj obj : mAttendanceStudentObjs) {
-            students.add(new AttendanceStudentObj(obj.getStudent(),obj.isPresent(),""));
-        }
-        AttendanceObj attendanceObj = new AttendanceObj(date,LecturerID,departmentalCourse,
-                studentID,students);
-        
-        String jsonString = new Gson().toJson(attendanceObj);
-        mStorageHelper.saveJsonFile("attendance", jsonString, studentID);
-        String filepath = mStorageHelper.getFilePath("attendance.json",studentID);
 
+        // Input
+        Date date1 = new Date(System.currentTimeMillis());
+        // Conversion
+        SimpleDateFormat sdf;
+        sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        sdf.setTimeZone(TimeZone.getTimeZone("CET"));
+        String ISOString = sdf.format(date1);
+
+        ArrayList<UploadStudentObj> students =  new ArrayList<>();
+        for (AttendanceStudentObj obj : mAttendanceStudentObjs) {
+            students.add(new UploadStudentObj(obj.getStudent(),obj.isPresent()));
+        }
+        AttendanceObj attendanceObj = new AttendanceObj(ISOString,LecturerID,departmentalCourse,
+                students);
+
+        filename = departmentalCourse + date;
+        jsonString = mGson.toJson(attendanceObj);
+
+        mStorageHelper.saveJsonFile(filename, jsonString, "Attendance");
+        String filepath = mStorageHelper.getFilePath(filename + ".json","Attendance");
 
         if (mNetworkCheck.isNetworkAvailable()){
-//            mPresenter.UploadAttendance(token, filepath);
+            mPresenter.UploadAttendance(token, filepath);
+            mLoading.setVisibility(View.VISIBLE);
+        }else{
+            mLoading.setVisibility(View.GONE);
+            Toast.makeText(this, "Attendance saved for later push!", Toast.LENGTH_SHORT).show();
+            finish();
         }
-
     }
 
     private void ShowErrorPanelControls(){
@@ -668,16 +734,22 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
 
     @Override
     public void OnAttendanceUploaded(String message) {
+        mLoading.setVisibility(View.GONE);
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         finish();
     }
 
     @Override
     public void OnUploadAttendanceFailed(String message) {
-
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        mLoading.setVisibility(View.GONE);
+        finish();
     }
 
     @Override
     public void OnUploadAttendanceError(Throwable e) {
-
+        Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+        mLoading.setVisibility(View.GONE);
+        finish();
     }
 }

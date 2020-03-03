@@ -120,7 +120,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/secondaryText"
                 android:padding="10dp"
-                android:text="Search for lecturer with a valid Phone No or Email to see results."/>
+                android:text="Search for l with a valid Phone No or Email to see results."/>
 
         </LinearLayout>
         <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>

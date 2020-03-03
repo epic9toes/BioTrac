@@ -10,15 +10,17 @@ import com.lloydant.biotrac.Repositories.IStudentBioUpdateRepository;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class StudentBioUpdateRepo implements IStudentBioUpdateRepository {
-//    @Override
-//    public Observable<Response<UpdateStudentBiometricMutation.Data>> UpdateStudentFingerprint(File file) {
-//        return null;
-//    }
+
+    @Inject
+    public StudentBioUpdateRepo() {
+    }
 
     @Override
     public Observable<Response<GetStudentByNoQuery.Data>> FindStudentByRegNo(String regno, String token) {

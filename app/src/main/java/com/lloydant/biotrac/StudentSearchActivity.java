@@ -10,40 +10,47 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.lloydant.biotrac.Repositories.implementations.StudentSearchRepo;
-import com.lloydant.biotrac.customAdapters.LecturerListAdapter;
 import com.lloydant.biotrac.customAdapters.StudentListAdapter;
-import com.lloydant.biotrac.models.Lecturer;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.models.Student;
-import com.lloydant.biotrac.presenters.LecturerSearchActivityPresenter;
 import com.lloydant.biotrac.presenters.StudentSearchActivityPresenter;
 import com.lloydant.biotrac.views.StudentSearchActivityView;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+
+import javax.inject.Inject;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
+
 
 public class StudentSearchActivity extends AppCompatActivity implements StudentListAdapter.OnStudentListener, StudentSearchActivityView {
 
-    private SharedPreferences mPreferences;
+    @Inject
+    SharedPreferences mPreferences;
+
+    @Inject
+    StudentSearchRepo mStudentSearchRepo;
+
+    @Inject
+    Picasso mPicasso;
+
     StudentSearchActivityPresenter mPresenter;
     private View mLoading, mNotFound;
     private TextView errorMsg;
     private EditText editTextSearch;
     private ImageView closeBtn;
-
     private Button btnRetry;
 
     ArrayList<Student> mStudents;
     RecyclerView mRecyclerView;
     StudentListAdapter mListAdapter;
-    String token, dept_id, username;
+    String token, dept_id;
     int level;
 
     public  static  final String StudentActivity = "StudentActivity";
@@ -53,6 +60,8 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_student_search);
+
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
         mLoading = findViewById(R.id.loading);
         mNotFound = findViewById(R.id.notFound);
@@ -68,8 +77,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
-        mPresenter = new StudentSearchActivityPresenter(this, new StudentSearchRepo());
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
+        mPresenter = new StudentSearchActivityPresenter(this,mStudentSearchRepo);
         token = mPreferences.getString("token", "Token not found!");
         dept_id = mPreferences.getString("dept_id", "Depertment not found!");
         level = mPreferences.getInt("level", 0);
@@ -134,7 +142,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
             mLoading.setVisibility(View.GONE);
             mNotFound.setVisibility(View.GONE);
             mStudents = studentArrayList;
-            mListAdapter = new StudentListAdapter(mStudents, this);
+            mListAdapter = new StudentListAdapter(mStudents, this, mPicasso);
             mRecyclerView.setAdapter(mListAdapter);
         } else {
             mLoading.setVisibility(View.GONE);

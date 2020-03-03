@@ -3,57 +3,47 @@ package com.lloydant.biotrac.models;
 import java.util.ArrayList;
 
 public class AttendanceObj {
-    private String date;
-    private String lecturer;
-    private String departmentalCourse;
-    private String student;
-    private ArrayList<AttendanceStudentObj> students;
+    private String d;
+    private String l;
+    private String dc;
+    private ArrayList<UploadStudentObj> ss;
 
-    public AttendanceObj(String date, String lecturer, String departmentalCourse, String student, ArrayList<AttendanceStudentObj> students) {
-        this.date = date;
-        this.lecturer = lecturer;
-        this.departmentalCourse = departmentalCourse;
-        this.student = student;
-        this.students = students;
+    public AttendanceObj(String d, String l, String dc, ArrayList<UploadStudentObj> ss) {
+        this.d = d;
+        this.l = l;
+        this.dc = dc;
+        this.ss = ss;
     }
 
-    public String getDate() {
-        return date;
+    public String getD() {
+        return d;
     }
 
-    public void setDate(String date) {
-        this.date = date;
+    public void setD(String d) {
+        this.d = d;
     }
 
-    public String getLecturer() {
-        return lecturer;
+    public String getL() {
+        return l;
     }
 
-    public void setLecturer(String lecturer) {
-        this.lecturer = lecturer;
+    public void setL(String l) {
+        this.l = l;
     }
 
-    public String getDepartmentalCourse() {
-        return departmentalCourse;
+    public String getDc() {
+        return dc;
     }
 
-    public void setDepartmentalCourse(String departmentalCourse) {
-        this.departmentalCourse = departmentalCourse;
+    public void setDc(String dc) {
+        this.dc = dc;
     }
 
-    public String getStudent() {
-        return student;
+    public ArrayList<UploadStudentObj> getSs() {
+        return ss;
     }
 
-    public void setStudent(String student) {
-        this.student = student;
-    }
-
-    public ArrayList<AttendanceStudentObj> getStudents() {
-        return students;
-    }
-
-    public void setStudents(ArrayList<AttendanceStudentObj> students) {
-        this.students = students;
+    public void setSs(ArrayList<UploadStudentObj> ss) {
+        this.ss = ss;
     }
 }

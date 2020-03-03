@@ -38,10 +38,10 @@ public class MainActivityPresenter {
                 new DisposableObserver<Response<GetCoursemateQuery.Data>>() {
                     @Override
                     public void onNext(Response<GetCoursemateQuery.Data> dataResponse) {
-                    if (dataResponse.data().GetCoursemate().docs() != null){
+                    if (dataResponse.data() != null){
                         List<GetCoursemateQuery.Doc> doc = dataResponse.data().GetCoursemate().docs();
                         ArrayList<Coursemate> coursemateArrayList = new ArrayList<>();
-                        ArrayList<RegisteredCourse> registeredCourses = null;
+                        ArrayList<RegisteredCourse> registeredCourses;
 
                         for (GetCoursemateQuery.Doc coursemate : doc){
 
@@ -83,7 +83,7 @@ public class MainActivityPresenter {
                 int total = 0;
             // student level
                 int level = 0;
-            if (dataResponse.data().GetRegisteredCourses().docs() != null){
+            if (dataResponse.data() != null){
                 List<GetRegisteredCoursesQuery.Doc> docList = dataResponse.data().GetRegisteredCourses().docs();
                 ArrayList<DepartmentalCourse> departmentalCourses = new ArrayList<>();
 
