@@ -1,5 +1,7 @@
 package com.lloydant.biotrac.customAdapters;
 
+import android.content.Context;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +9,7 @@ import android.widget.TextView;
 
 import com.lloydant.biotrac.R;
 import com.lloydant.biotrac.models.Student;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -18,11 +21,13 @@ public class StudentListAdapter extends RecyclerView.Adapter<StudentListAdapter.
 
     private ArrayList<Student> mStudents;
     private OnStudentListener mOnStudentListener;
+    private Picasso mPicasso;
 
 
-    public StudentListAdapter(ArrayList<Student> students, OnStudentListener onStudentListener) {
+    public StudentListAdapter(ArrayList<Student> students, OnStudentListener onStudentListener, Picasso picasso) {
         this.mStudents = students;
         this.mOnStudentListener = onStudentListener;
+        this.mPicasso = picasso;
 
     }
 
@@ -44,7 +49,14 @@ public class StudentListAdapter extends RecyclerView.Adapter<StudentListAdapter.
         holder.username.setText(mStudents.get(position).getName());
         holder.department.setText(mStudents.get(position).getDepartment().getName());
         holder.regNo.setText(mStudents.get(position).getReg_no());
-        holder.userImg.setImageResource(R.drawable.avatar);
+
+        //Render image using Picasso library
+        if (!TextUtils.isEmpty(mStudents.get(position).getImage())) {
+            mPicasso.get().load(mStudents.get(position).getImage())
+                    .error(R.drawable.avatar)
+                    .placeholder(R.drawable.avatar)
+                    .into(holder.userImg);
+        }
     }
 
     @Override

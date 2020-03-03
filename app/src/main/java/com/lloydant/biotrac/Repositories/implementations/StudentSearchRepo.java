@@ -9,11 +9,18 @@ import com.lloydant.biotrac.GetDepartmentalStudentForEnrollmentQuery;
 import com.lloydant.biotrac.GetStudentsByDepartmentQuery;
 import com.lloydant.biotrac.Repositories.IStudentSearchRepository;
 
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class StudentSearchRepo implements IStudentSearchRepository {
+
+    @Inject
+    public StudentSearchRepo() {
+    }
+
 
     @Override
     public Observable<Response<GetDepartmentalStudentForEnrollmentQuery.Data>> GetStudentsByDepartment(String department,

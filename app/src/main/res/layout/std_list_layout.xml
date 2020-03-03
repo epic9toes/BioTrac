@@ -4,9 +4,11 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:card_view="http://schemas.android.com/apk/res-auto"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    tools:ignore="RtlCompat" >
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card_view"
@@ -35,7 +37,6 @@
                     android:id="@+id/userImg"
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:src="@drawable/avatar"
                     android:focusableInTouchMode="false"
                     android:scaleType="centerCrop"/>
 

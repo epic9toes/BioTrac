@@ -13,26 +13,36 @@ import android.widget.TextView;
 
 import com.lloydant.biotrac.Repositories.implementations.LecturerSearchRepo;
 import com.lloydant.biotrac.customAdapters.LecturerListAdapter;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.models.Lecturer;
 import com.lloydant.biotrac.presenters.LecturerSearchActivityPresenter;
 import com.lloydant.biotrac.views.LecturerSearchActivityView;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
 
 
 public class LecturerSearchActivity extends AppCompatActivity implements LecturerListAdapter.OnLecturerListener, LecturerSearchActivityView {
 
-    private SharedPreferences mPreferences;
+
+    @Inject
+    SharedPreferences mPreferences;
+
+    @Inject
+    LecturerSearchRepo mLecturerSearchRepo;
+
     private ArrayList<Lecturer> mLecturerArrayList;
     LecturerListAdapter mListAdapter;
     RecyclerView mRecyclerView;
+
     LecturerSearchActivityPresenter mPresenter;
+
     private View mLoading, mNotFound;
     private TextView errorMsg;
     private EditText editTextSearch;
@@ -46,6 +56,8 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lecturer_search);
+
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
         mLoading = findViewById(R.id.loading);
         mNotFound = findViewById(R.id.notFound);
@@ -61,8 +73,8 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(layoutManager);
 
-        mPresenter = new LecturerSearchActivityPresenter(this, new LecturerSearchRepo());
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
+        mPresenter = new LecturerSearchActivityPresenter(this, mLecturerSearchRepo);
+
         token = mPreferences.getString("token", "Token not found!");
         mPresenter.GetLecturers(token);
 

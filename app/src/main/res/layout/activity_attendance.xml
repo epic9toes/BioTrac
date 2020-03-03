@@ -10,6 +10,8 @@
     tools:context=".EnrollFingerprintActivity"
     android:background="@color/whiteColor"
     tools:ignore="RtlCompat">
+
+    <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>
     <RelativeLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -190,7 +192,6 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:visibility="visible"
         android:id="@+id/fingerPanel"
         android:layout_width="match_parent"
         android:layout_height="0dp"

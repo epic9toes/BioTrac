@@ -5,10 +5,13 @@ import com.lloydant.biotrac.models.FingerprintObj;
 
 import java.nio.ByteBuffer;
 
+import javax.inject.Inject;
+
 public class FingerprintConverter {
 
     private Gson mGson;
 
+    @Inject
     public FingerprintConverter(Gson gson) {
         mGson = gson;
     }

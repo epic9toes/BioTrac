@@ -9,10 +9,13 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 
+import javax.inject.Inject;
+
 public class StorageHelper {
 
-    Context mContext;
+    private Context mContext;
 
+    @Inject
     public StorageHelper(Context context) {
         mContext = context;
     }
@@ -37,10 +40,10 @@ public class StorageHelper {
         return pathname;
     }
 
-    public String saveJsonFile(String filename, String content, String owner){
+    public String saveJsonFile(String filename, String content, String operationOrOwner){
 
 //        Create the file
-        File file = new File(createUserFolder(owner), filename + ".json");
+        File file = new File(createUserFolder(operationOrOwner), filename + ".json");
 
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
@@ -56,8 +59,8 @@ public class StorageHelper {
         }
     }
 
-    public String getFilePath(String filename, String owner) {
-        String pathname = mContext.getFilesDir() + "/" + owner + "/" + filename;
+    public String getFilePath(String filename, String operationOrOwner) {
+        String pathname = mContext.getFilesDir() + "/" + operationOrOwner + "/" + filename;
         File file = new File(pathname);
         String dir = file.getAbsolutePath();
         return dir;

@@ -10,6 +10,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 
+import com.lloydant.biotrac.BluetoothReaderServiceVariables;
 import com.lloydant.biotrac.EnrollFingerprintActivity;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class BluetoothReaderService {
     private InputStream mInStream;
     private OutputStream mOutStream;
 
-    // Constants that indicate the current connection state
+    // AppConstants that indicate the current connection state
     public static final int STATE_NONE = 0;       // we're doing nothing
     public static final int STATE_LISTEN = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
@@ -72,7 +73,7 @@ public class BluetoothReaderService {
         mState = state;
 
         // Give the new state to the Handler so the UI Activity can update
-        mHandler.obtainMessage(EnrollFingerprintActivity.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
+        mHandler.obtainMessage(BluetoothReaderServiceVariables.MESSAGE_STATE_CHANGE, state, -1).sendToTarget();
     }
 
     /**
@@ -144,7 +145,7 @@ public class BluetoothReaderService {
         mConnectedThread.start();
 
         // Send the name of the connected device back to the UI Activity
-        Message msg = mHandler.obtainMessage(EnrollFingerprintActivity.MESSAGE_DEVICE_NAME);
+        Message msg = mHandler.obtainMessage(BluetoothReaderServiceVariables.MESSAGE_DEVICE_NAME);
         Bundle bundle = new Bundle();
         bundle.putString(EnrollFingerprintActivity.DEVICE_NAME, device.getName());
         msg.setData(bundle);
@@ -188,7 +189,7 @@ public class BluetoothReaderService {
         setState(STATE_LISTEN);
 
         // Send a failure message back to the Activity
-        Message msg = mHandler.obtainMessage(EnrollFingerprintActivity.MESSAGE_TOAST);
+        Message msg = mHandler.obtainMessage(BluetoothReaderServiceVariables.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(EnrollFingerprintActivity.TOAST, "Unable to connect device");
         msg.setData(bundle);
@@ -202,7 +203,7 @@ public class BluetoothReaderService {
         setState(STATE_LISTEN);
 
         // Send a failure message back to the Activity
-        Message msg = mHandler.obtainMessage(EnrollFingerprintActivity.MESSAGE_TOAST);
+        Message msg = mHandler.obtainMessage(BluetoothReaderServiceVariables.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(EnrollFingerprintActivity.TOAST, "Device connection was lost");
         msg.setData(bundle);
@@ -390,7 +391,7 @@ public class BluetoothReaderService {
                     bytes = mmInStream.read(buffer);
 
                     // Send the obtained bytes to the UI Activity
-                    mHandler.obtainMessage(EnrollFingerprintActivity.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
+                    mHandler.obtainMessage(BluetoothReaderServiceVariables.MESSAGE_READ, bytes, -1, buffer).sendToTarget();
                     
                     try {
     					Thread.currentThread();
@@ -416,7 +417,7 @@ public class BluetoothReaderService {
                 mmOutStream.write(buffer);
 
                 // Share the sent message back to the UI Activity
-                mHandler.obtainMessage(EnrollFingerprintActivity.MESSAGE_WRITE, -1, -1, buffer)
+                mHandler.obtainMessage(BluetoothReaderServiceVariables.MESSAGE_WRITE, -1, -1, buffer)
                         .sendToTarget();
             } catch (IOException e) {
                 Log.e(TAG, "Exception during write", e);

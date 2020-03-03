@@ -4,20 +4,24 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
+import com.lloydant.biotrac.dagger2.BioTracApplication;
+
+import javax.inject.Inject;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
 
 public class SplashScreenActivity extends AppCompatActivity {
 
-    private SharedPreferences mPreferences;
+    @Inject
+    SharedPreferences mPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         boolean checkIDExists = mPreferences.contains("id");
         if (checkIDExists){
             startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));

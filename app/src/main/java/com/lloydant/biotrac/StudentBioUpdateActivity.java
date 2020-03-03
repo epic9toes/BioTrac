@@ -14,15 +14,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lloydant.biotrac.Repositories.implementations.StudentBioUpdateRepo;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.models.Student;
 import com.lloydant.biotrac.presenters.StudentBioUpdateActivityPresenter;
 import com.lloydant.biotrac.views.StudentBioUpdateActivityView;
+
+import javax.inject.Inject;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
 
 public class StudentBioUpdateActivity extends AppCompatActivity implements StudentBioUpdateActivityView {
 
@@ -40,8 +42,11 @@ public class StudentBioUpdateActivity extends AppCompatActivity implements Stude
     EditText prevFinger, newFinger;
     String studentID;
 
-
+    @Inject
     SharedPreferences mPreferences;
+
+    @Inject
+    StudentBioUpdateRepo mRepo;
 
     StudentBioUpdateActivityPresenter mPresenter;
 
@@ -55,18 +60,18 @@ public class StudentBioUpdateActivity extends AppCompatActivity implements Stude
         newFinger = includeStudentBio.findViewById(R.id.newFingerIndex);
         updateBtn = includeStudentBio.findViewById(R.id.updateBtn);
         closeBtn = findViewById(R.id.closeBtn);
-
         closeBtn.setOnClickListener(view -> finish());
+
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
         editTextSearch = findViewById(R.id.editTextSearch);
         btnSearch = findViewById(R.id.btnSearch);
         mLoaderView = findViewById(R.id.loading);
         notFoundPanel = findViewById(R.id.dataNotFound);
 
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String token = mPreferences.getString("token", "Token not found!");
 
-        mPresenter = new StudentBioUpdateActivityPresenter(this,new StudentBioUpdateRepo());
+        mPresenter = new StudentBioUpdateActivityPresenter(this, mRepo);
 
         btnSearch.setOnClickListener(view -> {
             editTextSearch.onEditorAction(EditorInfo.IME_ACTION_DONE);

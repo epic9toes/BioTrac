@@ -8,12 +8,18 @@ import com.lloydant.biotrac.GetCoursemateQuery;
 import com.lloydant.biotrac.GetRegisteredCoursesQuery;
 import com.lloydant.biotrac.Repositories.IMainActivityRepository;
 
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class MainActivityRepo implements IMainActivityRepository {
 
+    @Inject
+    public MainActivityRepo() {
+
+    }
 
     @Override
     public Observable<Response<GetCoursemateQuery.Data>> GetCourseMates(String token) {
@@ -26,8 +32,6 @@ public class MainActivityRepo implements IMainActivityRepository {
     public Observable<Response<GetRegisteredCoursesQuery.Data>> GetRegisteredCourses(String token) {
         ApolloCall<GetRegisteredCoursesQuery.Data> apolloCall = ApolloConnector.setupApollo(token)
                 .query(new GetRegisteredCoursesQuery());
-
-
         return Rx2Apollo.from(apolloCall).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread());
     }
 
