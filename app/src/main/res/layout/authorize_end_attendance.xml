@@ -4,7 +4,8 @@
     android:background="@drawable/rounded_rectangle"
     android:layout_marginLeft="20dp"
     android:layout_marginRight="20dp"
-    android:layout_height="460dp">
+    android:layout_height="460dp"
+    android:scrollbars="vertical">
 
     <pl.droidsonroids.gif.GifImageView
         android:id="@+id/successImg"
@@ -37,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginRight="35dp"
             android:layout_marginLeft="35dp"
-            android:text="To end this attendance, lecturer should place their finger on the scanner."
+            android:text="To end this attendance, l should place their finger on the scanner."
             android:textSize="18sp"
             android:textColor="@color/secondaryText"
             android:textAlignment="center"/>

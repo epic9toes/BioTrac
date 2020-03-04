@@ -4,10 +4,13 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import javax.inject.Inject;
+
 public class NetworkCheck {
 
     private Context mContext;
 
+    @Inject
     public NetworkCheck(Context context) {
         mContext = context;
     }

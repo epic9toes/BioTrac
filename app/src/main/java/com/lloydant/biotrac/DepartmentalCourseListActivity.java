@@ -29,6 +29,7 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lloydant.biotrac.customAdapters.DeptCourseAdapter;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.helpers.FingerprintConverter;
 import com.lloydant.biotrac.helpers.StorageHelper;
 import com.lloydant.biotrac.models.Course;
@@ -39,12 +40,19 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.inject.Inject;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_DEVICE_NAME;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_READ;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_STATE_CHANGE;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_TOAST;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_WRITE;
+
 
 public class DepartmentalCourseListActivity extends AppCompatActivity implements DeptCourseAdapter.OnDepartmentalCourseListener {
 
@@ -58,8 +66,12 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
 
     RecyclerView mRecyclerView;
     DeptCourseAdapter mDeptCourseAdapter;
-    private StorageHelper mStorageHelper;
-    private SharedPreferences mPreferences;
+
+    @Inject
+    StorageHelper mStorageHelper;
+
+    @Inject
+    SharedPreferences mPreferences;
 
 
     // Debugging
@@ -71,13 +83,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
     private final static byte CMD_CAPTUREHOST = 0x08;    //Caputre to Host
 
 
-
-    // Message types sent from the BluetoothChatService Handler
-    public static final int MESSAGE_STATE_CHANGE = 1;
-    public static final int MESSAGE_READ = 2;
-    public static final int MESSAGE_WRITE = 3;
-    public static final int MESSAGE_DEVICE_NAME = 4;
-    public static final int MESSAGE_TOAST = 5;
 
     // Key names received from the BluetoothChatService Handler
     public static final String DEVICE_NAME = "device_name";
@@ -115,7 +120,11 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
 
-    private FingerprintConverter mFingerprintConverter;
+    @Inject
+    FingerprintConverter mFingerprintConverter;
+
+    @Inject
+    Gson mGson;
 
     private View CoursesPanel, searchBtPanel;
     private Button searchBT;
@@ -135,6 +144,8 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         CoursesPanel = findViewById(R.id.CoursesPanel);
         searchBtPanel = findViewById(R.id.searchBtPanel);
         searchBT = findViewById(R.id.searchBT);
+
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -197,9 +208,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         } else {
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
-
-        mFingerprintConverter = new FingerprintConverter(new Gson());
-
     }
 
 
@@ -264,7 +272,6 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         }
     };
 
-
     @Override
     public synchronized void onResume() {
         super.onResume();
@@ -280,14 +287,12 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
         }
     }
 
-
     private void AddStatusListHex(byte[] data, int size) {
         String text = "";
         for (int i = 0; i < size; i++) {
             text = text + " " + Integer.toHexString(data[i] & 0xFF).toUpperCase() + "  ";
         }
     }
-
 
     private void filterRecycler(String text) {
         //new array list that will hold the filtered data
@@ -444,9 +449,8 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
 
 //    populate departmental courses from local storage
     void PopulateDeptCourseList(){
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         studentID = mPreferences.getString("id", "Student ID");
-        ArrayList<DepartmentalCourse> departmentalCourses = new Gson().fromJson(mStorageHelper.readJsonFile(studentID, "RegisteredCourses.json"), new TypeToken<ArrayList<DepartmentalCourse>>(){}.getType());
+        ArrayList<DepartmentalCourse> departmentalCourses = mGson.fromJson(mStorageHelper.readJsonFile(studentID, "RegisteredCourses.json"), new TypeToken<ArrayList<DepartmentalCourse>>(){}.getType());
         for (DepartmentalCourse departmentalCourse : departmentalCourses){
            mCourseLists.addAll(departmentalCourse.getCourses());
         }
@@ -541,7 +545,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
                                 }
 
                             } else
-                                finish();
+                                mAuthorizeDialog.dismiss();
                             Toast.makeText(this, "Command not recognized", Toast.LENGTH_SHORT).show();
                         }
                         break;

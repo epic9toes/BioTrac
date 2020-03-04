@@ -119,7 +119,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/secondaryText"
                 android:padding="10dp"
-                android:text="Search for student with a valid Reg No to see results."/>
+                android:text="Search for s with a valid Reg No to see results."/>
 
         </LinearLayout>
   <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>

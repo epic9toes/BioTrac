@@ -13,15 +13,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.lloydant.biotrac.Repositories.implementations.LecturerBioUpdateRepo;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.models.Lecturer;
 import com.lloydant.biotrac.presenters.LecturerBioUpdateActivityPresenter;
 import com.lloydant.biotrac.views.LecturerBioUpdateActivityView;
+
+import javax.inject.Inject;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
 
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
+import static com.lloydant.biotrac.helpers.AppConstants.USER_PREF;
 
 public class LecturerBioUpdateActivity extends AppCompatActivity  implements LecturerBioUpdateActivityView {
 
@@ -40,7 +43,11 @@ public class LecturerBioUpdateActivity extends AppCompatActivity  implements Lec
     String lecturerID;
 
 
+    @Inject
     SharedPreferences mPreferences;
+
+    @Inject
+    LecturerBioUpdateRepo mLecturerBioUpdateRepo;
 
     LecturerBioUpdateActivityPresenter mPresenter;
 
@@ -48,6 +55,10 @@ public class LecturerBioUpdateActivity extends AppCompatActivity  implements Lec
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lecturer_bio_update);
+
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
+
+
         includeLecturerBio = findViewById(R.id.includeLecturerBio);
         reason = includeLecturerBio.findViewById(R.id.reason);
         prevFinger = includeLecturerBio.findViewById(R.id.prevFingerIndex);
@@ -62,10 +73,9 @@ public class LecturerBioUpdateActivity extends AppCompatActivity  implements Lec
         mLoaderView = findViewById(R.id.loading);
         notFoundPanel = findViewById(R.id.dataNotFound);
 
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String token = mPreferences.getString("token", "Token not found!");
 
-        mPresenter = new LecturerBioUpdateActivityPresenter(this,new LecturerBioUpdateRepo());
+        mPresenter = new LecturerBioUpdateActivityPresenter(this, mLecturerBioUpdateRepo);
 
         btnSearch.setOnClickListener(view -> {
             editTextSearch.onEditorAction(EditorInfo.IME_ACTION_DONE);

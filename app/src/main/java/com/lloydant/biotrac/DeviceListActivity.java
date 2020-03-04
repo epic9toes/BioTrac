@@ -37,6 +37,10 @@ public class DeviceListActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Set result CANCELED incase the user backs out
+        setResult(Activity.RESULT_CANCELED);
+
         mBTDeviceDialog = new Dialog(this);
         mBTDeviceDialog.setContentView(R.layout.paired_devices_list);
         mListView = mBTDeviceDialog.findViewById(R.id.listView);
@@ -48,31 +52,25 @@ public class DeviceListActivity extends AppCompatActivity {
 //        Shows the list of paired bluetooth devices
         showList();
 
-        // Set result CANCELED incase the user backs out
-        setResult(Activity.RESULT_CANCELED);
-
     }
 
     // The on-click listener for all devices in the ListViews
-    private AdapterView.OnItemClickListener mDeviceClickListener = new AdapterView.OnItemClickListener() {
-        @Override
-        public void onItemClick(AdapterView<?> av, View v, int arg2, long arg3) {
-            // Cancel discovery because it's costly and we're about to connect
+    private AdapterView.OnItemClickListener mDeviceClickListener = (av, v, arg2, arg3) -> {
+        // Cancel discovery because it's costly and we're about to connect
 //            mBtAdapter.cancelDiscovery();
 
-            // Get the device MAC address, which is the last 17 chars in the
-            // View
-            String info = ((TextView) v).getText().toString();
-            String address = info.substring(info.length() - 17);
+        // Get the device MAC address, which is the last 17 chars in the
+        // View
+        String info = ((TextView) v).getText().toString();
+        String address = info.substring(info.length() - 17);
 
-            // Create the result Intent and include the MAC address
-            Intent intent = new Intent();
-            intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
+        // Create the result Intent and include the MAC address
+        Intent intent = new Intent();
+        intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
 
-            // Set result and finish this Activity
-            DeviceListActivity.this.setResult(Activity.RESULT_OK, intent);
-            DeviceListActivity.this.finish();
-        }
+        // Set result and finish this Activity
+        DeviceListActivity.this.setResult(Activity.RESULT_OK, intent);
+        DeviceListActivity.this.finish();
     };
 
     public void showList(){
@@ -95,4 +93,11 @@ public class DeviceListActivity extends AppCompatActivity {
         mBTDeviceDialog.show();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Make sure we're not calling the Dialog again
+        mBTDeviceDialog.dismiss();
+    }
 }

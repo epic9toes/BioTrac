@@ -7,7 +7,6 @@ import android.widget.TextView;
 
 import com.lloydant.biotrac.R;
 import com.lloydant.biotrac.models.Course;
-import com.lloydant.biotrac.models.DepartmentalCourse;
 
 import java.util.ArrayList;
 

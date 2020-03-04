@@ -10,11 +10,17 @@ import com.lloydant.biotrac.UploadAttendanceMutation;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class AttendanceRepo implements IAttendanceRepository {
+
+    @Inject
+    public AttendanceRepo() {
+    }
 
     @Override
     public Observable<Response<UploadAttendanceMutation.Data>> UploadAttendance(String token, String file) {

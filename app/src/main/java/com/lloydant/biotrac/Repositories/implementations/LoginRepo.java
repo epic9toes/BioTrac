@@ -9,11 +9,17 @@ import com.lloydant.biotrac.Repositories.ILoginRepository;
 import com.lloydant.biotrac.StudentLoginMutation;
 
 //import io.reactivex.Observable;
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class LoginRepo implements ILoginRepository {
+
+    @Inject
+    public LoginRepo() {}
+
 
     @Override
     public Observable<Response<StudentLoginMutation.Data>> StudentLogin(String username, String password) {

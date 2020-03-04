@@ -24,8 +24,8 @@ import android.widget.Toast;
 
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
-import com.google.gson.Gson;
 import com.lloydant.biotrac.Repositories.implementations.UpdateFingerprintRepo;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.helpers.FingerprintConverter;
 import com.lloydant.biotrac.presenters.UpdateFingerprintActivityPresenter;
 import com.lloydant.biotrac.views.UpdateFingerprintView;
@@ -33,19 +33,18 @@ import com.lloydant.biotrac.views.UpdateFingerprintView;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.inject.Inject;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.DEVICE_NAME;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_DEVICE_NAME;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_READ;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_STATE_CHANGE;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_TOAST;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_WRITE;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.TOAST;
-import static com.lloydant.biotrac.EnrollFingerprintActivity.IMG200;
-import static com.lloydant.biotrac.EnrollFingerprintActivity.IMG288;
-import static com.lloydant.biotrac.EnrollFingerprintActivity.IMG360;
-import static com.lloydant.biotrac.EnrollFingerprintActivity.MESSAGE_DEVICE_NAME;
 
 public class UpdateFingerprintActivity extends AppCompatActivity implements UpdateFingerprintView {
 
@@ -99,9 +98,15 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
 
     UpdateFingerprintActivityPresenter mPresenter;
     private String token;
-    public static final String USER_PREF = "com.lloydant.attendance.logged_in_user";
-    private SharedPreferences mPreferences;
-    private FingerprintConverter mFingerprintConverter;
+
+    @Inject
+    SharedPreferences mPreferences;
+
+    @Inject
+    FingerprintConverter mFingerprintConverter;
+
+    @Inject
+    UpdateFingerprintRepo mUpdateFingerprintRepo;
 
 //    UpdateFingerModel Objects
     private String UserId, reason, prevFinger, newFinger;
@@ -119,6 +124,8 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_update_fingerprint);
+
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
         mSuccessDialog = new Dialog(this);
         mSuccessDialog.setContentView(R.layout.update_success_dialog);
@@ -156,9 +163,7 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
         BTSearchPanel = findViewById(R.id.searchBtPanel);
         deviceInfoPanel = findViewById(R.id.deviceInfoPanel);
 
-        mFingerprintConverter = new FingerprintConverter(new Gson());
-        mPresenter = new UpdateFingerprintActivityPresenter(new UpdateFingerprintRepo(),this);
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
+        mPresenter = new UpdateFingerprintActivityPresenter(mUpdateFingerprintRepo,this);
         token = mPreferences.getString("token", "Empty Token");
 
 

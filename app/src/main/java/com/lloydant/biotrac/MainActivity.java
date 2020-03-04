@@ -2,7 +2,6 @@ package com.lloydant.biotrac;
 
 import android.Manifest;
 import android.app.Dialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -18,24 +17,26 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.lloydant.biotrac.Repositories.implementations.MainActivityRepo;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.helpers.NetworkCheck;
 import com.lloydant.biotrac.helpers.StorageHelper;
 import com.lloydant.biotrac.models.Coursemate;
 import com.lloydant.biotrac.models.DepartmentalCourse;
-import com.lloydant.biotrac.models.Student;
 import com.lloydant.biotrac.presenters.MainActivityPresenter;
 import com.lloydant.biotrac.views.MainActivityView;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
+import javax.inject.Inject;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.core.app.ActivityCompat;
 
 
 
 public class MainActivity extends AppCompatActivity implements MainActivityView {
-
-    public static final String USER_PREF = "com.lloydant.attendance.logged_in_user";
 
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
@@ -47,16 +48,28 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
 
 
     private LinearLayout mEnrollStudent, mEnrollLecturer, mStdBioUpdate, mLecturerBioUpdate, mStartAttendance;
-    private SharedPreferences mPreferences;
     private View mAdminMenu, mStudentMenu;
     private TextView mUsername;
     private View mLoaderView;
     private Button signOut;
+    private AppCompatImageView profileImg;
 
     private MainActivityPresenter mPresenter;
-    private StorageHelper mStorageHelper;
-    private NetworkCheck mNetworkCheck;
 
+    @Inject
+    StorageHelper mStorageHelper;
+
+    @Inject
+    NetworkCheck mNetworkCheck;
+
+    @Inject
+    SharedPreferences mPreferences;
+
+    @Inject
+    MainActivityRepo mMainActivityRepo;
+
+    @Inject
+    Picasso mPicasso;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         mUsername = findViewById(R.id.user_name);
         signOut = findViewById(R.id.signOut);
         mStudentMenu = findViewById(R.id.student_menu);
+        profileImg = findViewById(R.id.profileImg);
         mEnrollStudent = mStudentMenu.findViewById(R.id.enroll_student);
         mStartAttendance = mStudentMenu.findViewById(R.id.start_attendance);
         mAdminMenu = findViewById(R.id.admin_menu);
@@ -77,11 +91,8 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         mBTDeviceDialog.setContentView(R.layout.paired_devices_list);
         mBTDeviceDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
 
-
-        mNetworkCheck = new NetworkCheck(this);
-        mPresenter = new MainActivityPresenter(this, new MainActivityRepo());
-        mStorageHelper = new StorageHelper(this);
-
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
+        mPresenter = new MainActivityPresenter(this, mMainActivityRepo);
 
         mEnrollStudent.setOnClickListener(view -> startActivity(new Intent(MainActivity.this,
                 StudentSearchActivity.class)));
@@ -114,11 +125,16 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
     }
 
     void CheckAdminStatus(){
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String name = mPreferences.getString("name", "Name Placeholder");
         String token = mPreferences.getString("token", "Empty Token");
         String isAdmin = mPreferences.getString("isAdmin", "No Value");
+        String image = mPreferences.getString("image","image");
         mUsername.setText(name);
+        mPicasso.get()
+                .load(image)
+                .placeholder(R.drawable.avatar)
+                .error(R.drawable.avatar)
+                .into(profileImg);
 
         if (isAdmin.contains("Yes") ){
             mStudentMenu.setVisibility(View.GONE);
@@ -131,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
                 mLoaderView.setVisibility(View.VISIBLE);
             }else {
                 mLoaderView.setVisibility(View.GONE);
-                Toast.makeText(this, "Network not found", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Offline Mode!", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -142,7 +158,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
 
     @Override
     public void OnGetCourseMates(ArrayList<Coursemate> coursemates) {
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String studentID = mPreferences.getString("id", "Student ID");
         String jsonString = new Gson().toJson(coursemates);
         mLoaderView.setVisibility(View.GONE);
@@ -158,7 +173,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
 
     @Override
     public void OnGetRegisteredCourses(ArrayList<DepartmentalCourse> departmentalCourses) {
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         String studentID = mPreferences.getString("id", "Student ID");
         String jsonString = new Gson().toJson(departmentalCourses);
         mLoaderView.setVisibility(View.GONE);
@@ -180,7 +194,6 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
     }
 
     public void ClearSharedPreference(){
-        mPreferences = getSharedPreferences(USER_PREF, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = mPreferences.edit();
         editor.clear();
         editor.apply();

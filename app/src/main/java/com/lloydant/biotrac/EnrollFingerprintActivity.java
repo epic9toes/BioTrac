@@ -23,8 +23,8 @@ import android.widget.Toast;
 
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
-import com.google.gson.Gson;
 import com.lloydant.biotrac.Repositories.implementations.EnrollFingerprintRepo;
+import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.helpers.FingerprintConverter;
 import com.lloydant.biotrac.presenters.EnrollFingerprintPresenter;
 import com.lloydant.biotrac.views.EnrollFingerprintActivityView;
@@ -33,11 +33,17 @@ import com.lloydant.biotrac.views.EnrollFingerprintActivityView;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.inject.Inject;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_DEVICE_NAME;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_READ;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_STATE_CHANGE;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_TOAST;
+import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_WRITE;
 import static com.lloydant.biotrac.LecturerSearchActivity.LecturerActivity;
-import static com.lloydant.biotrac.LoginActivity.USER_PREF;
 import static com.lloydant.biotrac.StudentSearchActivity.StudentActivity;
 
 
@@ -58,13 +64,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
 
 
-
-    // Message types sent from the BluetoothChatService Handler
-    public static final int MESSAGE_STATE_CHANGE = 1;
-    public static final int MESSAGE_READ = 2;
-    public static final int MESSAGE_WRITE = 3;
-    public static final int MESSAGE_DEVICE_NAME = 4;
-    public static final int MESSAGE_TOAST = 5;
 
     // Key names received from the BluetoothChatService Handler
     public static final String DEVICE_NAME = "device_name";
@@ -114,11 +113,17 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     private String token;
     private String lecturerID, studentID;
 
-    private SharedPreferences mPreferences;
+    @Inject
+    SharedPreferences mPreferences;
+
     EnrollFingerprintPresenter mPresenter;
 
+    @Inject
+    FingerprintConverter mFingerprintConverter;
 
-    private FingerprintConverter mFingerprintConverter;
+
+    @Inject
+    EnrollFingerprintRepo mRepo;
 
     private Timer mTimerTimeout = null;
     private TimerTask mTaskTimeout = null;
@@ -129,6 +134,8 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enroll_fingerprint);
+
+        ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
         backBtn = findViewById(R.id.backBtn);
         DeviceName = findViewById(R.id.deviceName);
@@ -180,8 +187,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         // Get local Bluetooth adapter
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        mFingerprintConverter = new FingerprintConverter(new Gson());
-        mPresenter = new EnrollFingerprintPresenter(new EnrollFingerprintRepo(), this);
+        mPresenter = new EnrollFingerprintPresenter(mRepo, this);
 
         // If the adapter is null, then Bluetooth is not supported
         if (mBluetoothAdapter == null) {
@@ -198,7 +204,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
             Toast.makeText(this, "Init Match failed", Toast.LENGTH_SHORT).show();
         }
 
-        mPreferences = getApplicationContext().getSharedPreferences(USER_PREF,MODE_PRIVATE);
         if (getIntent().getExtras().getString(LecturerActivity) != null){
             name = getIntent().getExtras().getString("LecturerName", "Lecturer Name");
 

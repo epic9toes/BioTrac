@@ -8,11 +8,17 @@ import com.lloydant.biotrac.GetLecturersForEnrollmentQuery;
 import com.lloydant.biotrac.GetLecturersQuery;
 import com.lloydant.biotrac.Repositories.ILecturerSearchRepository;
 
+import javax.inject.Inject;
+
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 public class LecturerSearchRepo implements ILecturerSearchRepository {
+
+    @Inject
+    public LecturerSearchRepo() {
+    }
 
     @Override
     public Observable<Response<GetLecturersForEnrollmentQuery.Data>> GetLecturerList(String token) {
