@@ -10,7 +10,9 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
     private TextView mUsername;
     private View mLoaderView;
     private Button signOut;
-    private AppCompatImageView profileImg;
+    private ImageView profileImg;
 
     private MainActivityPresenter mPresenter;
 
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         mUsername = findViewById(R.id.user_name);
         signOut = findViewById(R.id.signOut);
         mStudentMenu = findViewById(R.id.student_menu);
@@ -122,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
             }
         }
 
+
     }
 
     void CheckAdminStatus(){
@@ -130,8 +134,12 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
         String isAdmin = mPreferences.getString("isAdmin", "No Value");
         String image = mPreferences.getString("image","image");
         mUsername.setText(name);
+
+
         mPicasso.get()
                 .load(image)
+                .fit()
+                .centerCrop()
                 .placeholder(R.drawable.avatar)
                 .error(R.drawable.avatar)
                 .into(profileImg);

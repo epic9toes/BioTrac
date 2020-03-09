@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/backgroundColor"
+    tools:context=".StudentSearchActivity"
+    tools:ignore="RtlCompat" >
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="20dp"
+        android:background="@color/colorPrimaryDark"
+        >
+        <ImageView
+            android:id="@+id/closeBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_close"
+            android:layout_marginLeft="15dp"
+            android:focusable="true"
+            android:clickable="true"
+            android:background="@drawable/button_ripple"
+            />
+
+        <TextView
+            android:layout_toEndOf="@id/closeBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/whiteColor"
+            android:textAlignment="center"
+            android:textSize="32sp"
+            android:textStyle="normal"
+            android:layout_marginBottom="40dp"
+            android:text="Student Fingerprint Enrollment" />
+
+        <EditText
+            android:id="@+id/editTextSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="25dp"
+            android:paddingBottom="25dp"
+            android:textSize="30sp"
+            android:layout_below="@id/closeBtn"
+            android:hint="Enter Name or Reg No."
+            android:background="@drawable/rounded_white"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginEnd="15dp"
+            android:drawablePadding="5dp"
+            android:focusable="true"
+            android:drawableStart="@drawable/ic_search"
+            android:clickable="true"
+            android:layout_marginBottom="20dp"/>
+
+
+    </RelativeLayout>
+
+    <include
+        android:id="@+id/loading"
+        layout="@layout/loading"/>
+
+    <include android:id="@+id/notFound"
+        layout="@layout/not_found" android:visibility="gone"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/std_list_layout"></androidx.recyclerview.widget.RecyclerView>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

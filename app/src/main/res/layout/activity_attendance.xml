@@ -12,186 +12,223 @@
     tools:ignore="RtlCompat">
 
     <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>
-    <RelativeLayout
+
+    <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_weight="1.3"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:background="@drawable/bottom_curves">
 
-        <androidx.cardview.widget.CardView
-            android:id="@+id/lecturerCardView"
-            card_view:cardElevation="5dp"
-            card_view:cardCornerRadius="15dp"
-            android:layout_margin="10dp"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
-            <RelativeLayout
+            <androidx.cardview.widget.CardView
+                android:id="@+id/lecturerCardView"
+                card_view:cardElevation="5dp"
+                card_view:cardCornerRadius="15dp"
+                android:layout_margin="10dp"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/button_ripple">
-
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/imgContainer"
-                    android:layout_width="95dp"
-                    android:layout_height="95dp"
-                    app:cardCornerRadius="250dp"
-                    android:layout_margin="15dp">
-
-                    <androidx.appcompat.widget.AppCompatImageView
-                        android:id="@+id/userImg"
-                        android:layout_width="95dp"
-                        android:layout_height="95dp"
-                        android:src="@drawable/avatar"
-                        android:focusableInTouchMode="false"
-                        android:scaleType="centerCrop"/>
-
-                </androidx.cardview.widget.CardView>
-
-                <TextView
-                    android:id="@+id/username"
-                    android:layout_alignLeft="@id/imgContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Prof. Okonkwor E."
-                    android:textAllCaps="true"
-                    android:textStyle="bold"
-                    android:lines="1"
-                    android:ems="8"
-                    android:ellipsize="end"
-                    android:textSize="25sp"
-                    android:layout_marginLeft="105dp"
-                    android:paddingTop="20dp"
-                    android:paddingBottom="20dp"
-                    android:textColor="@color/primaryText"
-                    android:layout_alignParentLeft="@id/imgContainer"/>
+                android:layout_height="match_parent">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_below="@id/username"
-                    android:orientation="horizontal">
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/button_ripple">
 
-                    <TextView
-                        android:id="@+id/designation"
-                        android:layout_alignLeft="@id/imgContainer"
-                        android:layout_marginLeft="105dp"
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:gravity="center"
+                        android:layout_weight="1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                            android:id="@+id/photoPanel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:padding="5dp"
+                            android:layout_margin="5dp"
+                            android:background="@color/colorPrimaryDark">
+
+                            <ImageView
+                                android:id="@+id/profileImg"
+                                android:layout_width="95dp"
+                                android:layout_height="95dp"
+                                android:src="@drawable/avatar"
+                                android:scaleType="centerCrop"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_weight="2.3"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Lecturer"
-                        android:textColor="@color/colorPrimaryDark"
-                        android:textSize="18sp"
-                        android:layout_marginTop="5dp"
-                        android:paddingLeft="15dp"/>
+                        android:orientation="vertical"
+                        android:layout_marginBottom="10dp">
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_account_circle"
-                        android:paddingBottom="5dp"/>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content">
 
-                    <TextView
-                        android:id="@+id/courseCode"
-                        android:layout_alignLeft="@id/imgContainer"
-                        android:layout_marginLeft="5dp"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/colorPrimaryDark"
-                        android:text="BioChem101"
-                        android:textSize="18sp"
-                        android:textAllCaps="true"
-                        android:layout_marginTop="5dp"
-                        android:paddingLeft="15dp"/>
+                            <TextView
+                                android:id="@+id/username"
+                                android:layout_toEndOf="@id/imgContainer"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Prof. Okonkwor E."
+                                android:textAllCaps="true"
+                                android:textStyle="bold"
+                                android:lines="1"
+                                android:ems="8"
+                                android:ellipsize="end"
+                                android:textSize="22sp"
+                                android:paddingTop="20dp"
+                                android:paddingBottom="20dp"
+                                android:textColor="@color/primaryText"/>
+                        </LinearLayout>
 
-                    <ImageView
-                        android:layout_width="40dp"
-                        android:layout_height="40dp"
-                        android:src="@drawable/ic_turned_in"
-                        android:paddingBottom="5dp"/>
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_below="@id/username"
+                            android:layout_alignParentEnd="true"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignLeft="@id/imgContainer"
+                                android:layout_marginTop="5dp"
+                                android:text="Lecturer"
+                                android:textColor="@color/colorPrimaryDark"
+                                android:textSize="20sp" />
+
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:paddingBottom="5dp"
+                                android:src="@drawable/ic_account_circle" />
+
+                            <TextView
+                                android:id="@+id/courseCode"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignLeft="@id/imgContainer"
+                                android:layout_marginTop="5dp"
+                                android:text="BioChem101"
+                                android:textAllCaps="true"
+                                android:textColor="@color/colorPrimaryDark"
+                                android:textSize="20sp" />
+
+                            <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:paddingBottom="5dp"
+                                android:src="@drawable/ic_turned_in" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-
-
-            </RelativeLayout>
-
-        </androidx.cardview.widget.CardView>
-
-        <LinearLayout
-            android:id="@+id/attendanceDescription"
-            android:background="@drawable/bottom_curves_white"
-            android:layout_margin="10dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_below="@id/lecturerCardView"
-            android:padding="20dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Course Title"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textAllCaps="true"
-                android:textColor="@color/primaryText"/>
-
-            <TextView
-                android:id="@+id/courseTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Industrial Chemistry"
-                android:textAllCaps="true"
-                android:textSize="14sp"
-                android:layout_marginTop="5dp"
-                android:textColor="@color/secondaryText"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Date"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="10dp"
-                android:textAllCaps="true"
-                android:textColor="@color/primaryText"/>
-
-            <TextView
-                android:id="@+id/dateTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Thurs, 15th Nov, 2020"
-                android:textAllCaps="true"
-                android:textSize="14sp"
-                android:layout_marginTop="5dp"
-                android:textColor="@color/secondaryText"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Start Time"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginTop="10dp"
-                android:textAllCaps="true"
-                android:textColor="@color/primaryText"/>
-
-            <TextView
-                android:id="@+id/timeTxt"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="03:41 PM"
-                android:textAllCaps="true"
-                android:textSize="14sp"
-                android:layout_marginTop="5dp"
-                android:textColor="@color/secondaryText"/>
+            </androidx.cardview.widget.CardView>
 
         </LinearLayout>
 
-    </RelativeLayout>
+
+        <ScrollView
+            android:layout_below="@id/lecturerCardView"
+            android:background="@drawable/bottom_curves_white"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1.5"
+            android:paddingLeft="15dp"
+            android:scrollbars="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Course Title"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="5dp"
+                    android:textAllCaps="true"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/courseTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Industrial Chemistry"
+                    android:textAllCaps="true"
+                    android:textSize="15sp"
+                    android:lines="1"
+                    android:ems="18"
+                    android:ellipsize="end"
+                    android:layout_marginTop="5dp"
+                    android:textColor="@color/secondaryText"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Date"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    android:textAllCaps="true"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/dateTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Thurs, 15th Nov, 2020"
+                    android:textAllCaps="true"
+                    android:textSize="15sp"
+                    android:layout_marginTop="5dp"
+                    android:textColor="@color/secondaryText"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Start Time"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="10dp"
+                    android:textAllCaps="true"
+                    android:textColor="@color/primaryText"/>
+
+                <TextView
+                    android:id="@+id/timeTxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="03:41 PM"
+                    android:textAllCaps="true"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginTop="5dp"
+                    android:textColor="@color/secondaryText"/>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+
+    </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/fingerPanel"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -211,12 +248,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Place your finger on scanner"
-                android:textSize="20sp"
+                android:textSize="18sp"
                 android:textAlignment="center"
                 android:textColor="@color/primaryText"
                 android:textStyle="normal"
-                android:paddingBottom="5dp"
-                android:paddingTop="15dp"/>
+                android:paddingBottom="5dp"/>
 
             <TextView
                 android:layout_width="match_parent"
@@ -253,23 +289,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="@drawable/button_ripple">
-                <androidx.cardview.widget.CardView
-                    android:layout_alignParentLeft="true"
-                    android:id="@+id/stdImgContainer"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    app:cardCornerRadius="250dp"
-                    android:layout_margin="15dp">
 
-                    <androidx.appcompat.widget.AppCompatImageView
+                <LinearLayout
+                    android:id="@+id/stdImgContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="5dp"
+                    android:layout_margin="15dp"
+                    android:background="@color/colorPrimaryDark">
+
+                    <ImageView
                         android:id="@+id/stdUserImg"
                         android:layout_width="80dp"
                         android:layout_height="80dp"
                         android:src="@drawable/avatar"
-                        android:focusableInTouchMode="false"
                         android:scaleType="centerCrop"/>
 
-                </androidx.cardview.widget.CardView>
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/stdUsername"
@@ -331,7 +367,7 @@
         </androidx.cardview.widget.CardView>
 
         <RelativeLayout
-            android:layout_weight="1.8"
+            android:layout_weight="1.3"
             android:layout_width="match_parent"
             android:layout_height="0dp">
 
@@ -357,6 +393,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:visibility="gone"
         android:id="@+id/searchBtPanel"
         android:layout_weight="2"
         android:layout_width="match_parent"
@@ -403,7 +440,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="gone"
+        android:visibility="visible"
         android:id="@+id/startAttendancePanel"
         android:layout_weight="2"
         android:layout_width="match_parent"
@@ -435,8 +472,10 @@
             android:id="@+id/btnStartAttendance"
             android:textStyle="bold"
             android:layout_width="wrap_content"
-            android:layout_height="60dp"
+            android:layout_height="wrap_content"
             android:text="Start Attendance"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
             android:textAlignment="center"
             android:textColor="@color/whiteColor"
             android:background="@drawable/rounded_btn"
@@ -445,6 +484,7 @@
             android:paddingLeft="75dp"
             android:paddingRight="85dp"
             android:layout_gravity="center"
+            android:layout_marginBottom="10dp"
             android:drawableLeft="@drawable/ic_fingerprint" />
 
     </LinearLayout>

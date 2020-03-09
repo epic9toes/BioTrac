@@ -52,10 +52,9 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
     ImageView backBtn;
     TextView username;
 
-    private TextView DeviceName;
     private Button ConnectBluetoothBtn,  onUpdateSucess, onUpdateError, cancelBtn;
 
-    private View StartPanel, BTSearchPanel, deviceInfoPanel, loadingPanel;
+    private View StartPanel, BTSearchPanel,  loadingPanel;
 
     // Name of the connected device
     private String mConnectedDeviceName = null;
@@ -157,11 +156,9 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
         username = findViewById(R.id.username);
         loadingPanel = findViewById(R.id.loadingPanel);
 
-        DeviceName = findViewById(R.id.deviceName);
         ConnectBluetoothBtn = findViewById(R.id.searchBT);
         StartPanel = findViewById(R.id.startPanel);
         BTSearchPanel = findViewById(R.id.searchBtPanel);
-        deviceInfoPanel = findViewById(R.id.deviceInfoPanel);
 
         mPresenter = new UpdateFingerprintActivityPresenter(mUpdateFingerprintRepo,this);
         token = mPreferences.getString("token", "Empty Token");
@@ -244,8 +241,6 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
                         case BluetoothReaderService.STATE_CONNECTED:
                             BTSearchPanel.setVisibility(View.GONE);
                             StartPanel.setVisibility(View.VISIBLE);
-                            deviceInfoPanel.setVisibility(View.VISIBLE);
-                            DeviceName.setText(mConnectedDeviceName);
                             SendCommand(CMD_ENROLHOST, null, 0);
                             break;
                         case BluetoothReaderService.STATE_CONNECTING:

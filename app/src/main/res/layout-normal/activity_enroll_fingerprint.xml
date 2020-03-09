@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".EnrollFingerprintActivity"
+    android:background="@color/whiteColor">
+    <RelativeLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:background="@drawable/bottom_curves">
+
+        <ImageView
+            android:id="@+id/backBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_arrow_back"
+            android:layout_marginTop="15dp"
+            android:padding="5dp"
+            android:layout_centerVertical="true"
+            android:background="@drawable/button_ripple"
+            android:focusable="true"
+            android:clickable="true"/>
+
+        <LinearLayout
+            android:id="@+id/imgContainer"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:background="@color/whiteColor">
+
+            <ImageView
+                android:id="@+id/profileImg"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/avatar"
+                android:scaleType="centerCrop"/>
+
+        </LinearLayout>
+        <TextView
+            android:id="@+id/username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_below="@id/imgContainer"
+            android:text="Hello!"
+            android:paddingLeft="15dp"
+            android:paddingRight="15dp"
+            android:textSize="28sp"
+            android:textAlignment="center"
+            android:lines="1"
+            android:ems="8"
+            android:ellipsize="end"
+            android:textColor="@color/whiteColor"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Fingerprint Enrollment"
+            android:layout_below="@id/username"
+            android:textSize="15sp"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:gravity="center_horizontal" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/startPanel"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:orientation="vertical"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Place your finger on scanner"
+            android:textSize="30sp"
+            android:textAlignment="center"
+            android:textColor="@color/primaryText"
+            android:textStyle="normal"
+            android:paddingBottom="5dp"
+            android:paddingTop="15dp"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Make sure your finger fits properly on the scanner for better capture experience."
+            android:textSize="15sp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:textAlignment="center"
+            android:textColor="@color/primaryText"
+            android:textStyle="normal"
+            android:gravity="center_horizontal" />
+
+        <pl.droidsonroids.gif.GifImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/fingerprint2"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/searchBtPanel"
+        android:layout_weight="1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="vertical">
+
+        <ImageView
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:src="@drawable/sad"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:text="Bluetooth is disconnected"
+            android:textSize="15sp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:textAlignment="center"
+            android:textColor="@color/primaryText"
+            android:textStyle="normal"
+            android:gravity="center_horizontal" />
+        <Button
+            android:id="@+id/searchBT"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="60dp"
+            android:text="Search Bluetooth"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawableStart="@drawable/ic_fingerprint"
+            android:drawablePadding="10dp"
+            android:paddingLeft="75dp"
+            android:paddingRight="85dp"
+            android:layout_gravity="center"
+            android:drawableLeft="@drawable/ic_fingerprint" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:visibility="gone"
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp">
+        <include layout="@layout/loading" android:id="@+id/loading"/>
+    </LinearLayout>
+
+
+</androidx.appcompat.widget.LinearLayoutCompat>
