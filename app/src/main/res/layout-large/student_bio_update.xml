@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:scrollbars="vertical">
+
+    <androidx.cardview.widget.CardView
+        card_view:cardElevation="5dp"
+        android:layout_margin="20dp"
+        card_view:cardCornerRadius="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/button_ripple">
+
+            <LinearLayout
+                android:id="@+id/imgContainer"
+                android:layout_marginBottom="15dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="30dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:background="@color/colorPrimaryDark">
+
+                <ImageView
+                    android:id="@+id/profile_image"
+                    android:layout_width="170dp"
+                    android:layout_height="170dp"
+                    android:src="@drawable/avatar"
+                    android:scaleType="centerCrop"/>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/username"
+                android:layout_below="@id/imgContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAlignment="center"
+                android:text="Mohammed Ali Chukwuma"
+                android:textStyle="bold"
+                android:textSize="35sp"
+                android:layout_marginBottom="5dp"
+                android:gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/stdDepartment"
+                android:layout_below="@id/username"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Computer Engineering"
+                android:textSize="26sp"
+                android:textAlignment="center"
+                android:layout_marginBottom="5dp"
+                android:gravity="center_horizontal" />
+
+            <TextView
+                android:id="@+id/stdRegNo"
+                android:layout_below="@id/stdDepartment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Esut/2001/02365"
+                android:textSize="24sp"
+                android:textAllCaps="true"
+                android:textAlignment="center"
+                android:layout_marginBottom="10dp"
+                android:gravity="center_horizontal" />
+
+            <AutoCompleteTextView
+                android:id="@+id/reason"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:textSize="25sp"
+                android:layout_below="@id/stdRegNo"
+                android:inputType="textMultiLine"
+                android:hint="Why do you want to update fingerprint?"
+                android:layout_marginTop="5dp"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="25dp"
+                android:layout_marginBottom="5dp"
+                android:imeOptions="actionNext"/>
+
+            <EditText
+                android:id="@+id/prevFingerIndex"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/reason"
+                android:textSize="25sp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:inputType="number"
+                android:hint="Index Number of the previous finger?"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="25dp"
+                android:layout_marginBottom="10dp"
+                android:imeOptions="actionNext"/>
+
+            <EditText
+                android:id="@+id/newFingerIndex"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/prevFingerIndex"
+                android:inputType="number"
+                android:textSize="25sp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:hint="Index Number of the new finger?"
+                android:layout_marginLeft="25dp"
+                android:layout_marginRight="25dp"
+                android:layout_marginBottom="10dp"
+                android:imeOptions="actionNext"/>
+
+            <Button
+                android:id="@+id/updateBtn"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Update Fingerprint"
+                android:layout_below="@id/newFingerIndex"
+                android:textAlignment="center"
+                android:layout_centerHorizontal="true"
+                android:textColor="@color/whiteColor"
+                android:background="@drawable/rounded_btn"
+                android:drawablePadding="10dp"
+                android:textSize="22sp"
+                android:paddingTop="20dp"
+                android:paddingBottom="20dp"
+                android:paddingLeft="60dp"
+                android:paddingRight="60dp"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="20dp"
+                android:layout_gravity="center"/>
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+</ScrollView>

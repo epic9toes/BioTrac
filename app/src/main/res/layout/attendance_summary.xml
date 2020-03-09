@@ -1,66 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:background="@drawable/rounded_rectangle"
+    android:layout_width="match_parent"
+    android:layout_height="340dp"
     android:layout_marginLeft="20dp"
     android:layout_marginRight="20dp"
-    android:layout_height="340dp"
+    android:background="@drawable/rounded_rectangle"
+    android:orientation="vertical"
     android:scrollbars="vertical">
 
     <ImageView
-        android:id="@+id/successImg"
-        android:layout_weight="0.5"
-        android:layout_marginTop="25dp"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:src="@drawable/summary"/>
+        android:layout_marginTop="25dp"
+        android:layout_weight="0.5"
+        android:baselineAligned="false"
+        android:src="@drawable/summary" />
 
     <LinearLayout
-        android:layout_weight="2"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="2"
         android:orientation="vertical">
 
         <TextView
-            android:layout_weight="0"
-            android:id="@+id/successMsg"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:gravity="center_horizontal"
             android:text="Attendance Summary"
-            android:textSize="25sp"
-            android:textStyle="bold"
+            android:textAlignment="center"
             android:textColor="@color/success"
-            android:textAlignment="center"/>
+            android:textSize="25sp"
+            android:textStyle="bold" />
 
         <LinearLayout
-            android:visibility="visible"
-            android:id="@+id/btnPanel"
-            android:layout_weight="0"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_weight="0"
+            android:orientation="vertical"
+            android:visibility="visible">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Total No of ss: "
                     android:textAllCaps="true"
-                    android:textSize="15sp"
-                    android:textColor="@color/primaryText"/>
+                    android:textColor="@color/primaryText"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/totalCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="250"
+                    android:textColor="@color/colorPrimaryDark"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorPrimaryDark"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -68,22 +69,23 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="No of ss p : "
                     android:textAllCaps="true"
-                    android:textSize="15sp"
-                    android:textColor="@color/primaryText"/>
+                    android:textColor="@color/primaryText"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/presentCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="115"
+                    android:textColor="@color/colorPrimaryDark"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorPrimaryDark"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -91,22 +93,23 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_marginTop="10dp">
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="No of ss absent : "
                     android:textAllCaps="true"
-                    android:textSize="15sp"
-                    android:textColor="@color/primaryText"/>
+                    android:textColor="@color/primaryText"
+                    android:textSize="15sp" />
 
                 <TextView
                     android:id="@+id/absentCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="15"
+                    android:textColor="@color/colorPrimaryDark"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/colorPrimaryDark"/>
+                    android:textStyle="bold" />
             </LinearLayout>
 
             <LinearLayout
@@ -114,20 +117,21 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="15dp"
                 android:orientation="horizontal">
+
                 <Button
-                    android:layout_weight="1"
                     android:id="@+id/doneBtn"
-                    android:textStyle="bold"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Done"
-                    android:background="@drawable/rounded_btn"
-                    android:textAlignment="center"
-                    android:padding="20dp"
-                    android:textColor="@color/whiteColor"
+                    android:layout_gravity="center"
                     android:layout_marginLeft="25dp"
                     android:layout_marginRight="10dp"
-                    android:layout_gravity="center"/>
+                    android:layout_weight="1"
+                    android:background="@drawable/rounded_btn"
+                    android:padding="20dp"
+                    android:text="Done"
+                    android:textAlignment="center"
+                    android:textColor="@color/whiteColor"
+                    android:textStyle="bold" />
 
             </LinearLayout>
 

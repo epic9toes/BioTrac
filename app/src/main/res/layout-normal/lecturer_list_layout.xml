@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    card_view:cardElevation="5dp"
+    android:layout_marginLeft="10dp"
+    android:layout_marginRight="10dp"
+    android:layout_marginTop="5dp"
+    card_view:cardCornerRadius="15dp"
+    android:layout_marginBottom="5dp"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/button_ripple">
+
+        <LinearLayout
+            android:id="@+id/imgContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:layout_margin="15dp"
+            android:background="@color/colorPrimaryDark">
+
+            <ImageView
+                android:id="@+id/userImg"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:src="@drawable/avatar"
+                android:scaleType="centerCrop"/>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/username"
+            android:layout_alignLeft="@id/imgContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prof. Njoku M."
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:layout_marginLeft="105dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="2dp"
+            android:paddingTop="10dp"/>
+
+        <TextView
+            android:id="@+id/email"
+            android:layout_alignLeft="@id/imgContainer"
+            android:layout_marginLeft="105dp"
+            android:layout_below="@id/username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="njokuwilliam@gmail.com"
+            android:textSize="15sp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:paddingBottom="2dp"/>
+
+        <TextView
+            android:id="@+id/phoneNo"
+            android:layout_alignLeft="@id/imgContainer"
+            android:layout_marginLeft="105dp"
+            android:layout_below="@id/email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+2347064655443"
+            android:textSize="18sp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:textAllCaps="true"
+            android:paddingBottom="10dp"/>
+
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingRight="15dp"
+            android:src="@drawable/ic_arrow_forward_ios"
+            android:layout_alignParentRight="true" />
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

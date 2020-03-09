@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:background="@drawable/rounded_rectangle"
+    android:layout_marginLeft="20dp"
+    android:layout_marginRight="20dp"
+    android:layout_height="wrap_content">
+
+    <pl.droidsonroids.gif.GifImageView
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:src="@drawable/fingerprint2"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Authorize End Attendance"
+            android:textSize="30sp"
+            android:textStyle="bold"
+            android:textColor="@color/success"
+            android:textAlignment="center"
+            android:gravity="center_horizontal" />
+
+        <TextView
+            android:layout_weight="0"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="35dp"
+            android:layout_marginLeft="35dp"
+            android:text="To end this attendance, lecturer should place their finger on the scanner."
+            android:textSize="16sp"
+            android:textColor="@color/secondaryText"
+            android:textAlignment="center"
+            android:gravity="center_horizontal" />
+
+        <LinearLayout
+            android:visibility="visible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/errorMsg"
+                android:visibility="gone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="15dp"
+                android:layout_marginLeft="15dp"
+                android:textColor="@color/failure"
+                android:text="Fingerprint not recognized."
+                android:textAlignment="center"
+                android:padding="15dp"
+                android:textSize="16sp"
+                android:gravity="center_horizontal" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:padding="10dp"
+                android:orientation="horizontal">
+
+                <Button
+                    android:visibility="gone"
+                    android:id="@+id/tryAgainBtn"
+                    android:layout_weight="1"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Try Again"
+                    android:background="@drawable/rounded_btn"
+                    android:textAlignment="center"
+                    android:padding="20dp"
+                    android:textColor="@color/whiteColor"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_gravity="center"/>
+
+                <Button
+                    android:visibility="gone"
+                    android:layout_weight="1"
+                    android:id="@+id/cancelBtn"
+                    android:textStyle="bold"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cancel"
+                    android:background="@drawable/rounded_btn_error"
+                    android:textAlignment="center"
+                    android:padding="20dp"
+                    android:textColor="@color/whiteColor"
+                    android:layout_marginLeft="25dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_gravity="center"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</LinearLayout>

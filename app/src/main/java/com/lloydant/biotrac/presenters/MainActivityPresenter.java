@@ -17,6 +17,7 @@ import com.lloydant.biotrac.views.MainActivityView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.observers.DisposableObserver;
@@ -87,6 +88,7 @@ public class MainActivityPresenter {
                 List<GetRegisteredCoursesQuery.Doc> docList = dataResponse.data().GetRegisteredCourses().docs();
                 ArrayList<DepartmentalCourse> departmentalCourses = new ArrayList<>();
 
+                assert docList != null;
                 for (GetRegisteredCoursesQuery.Doc course : docList){
                     // build session object
                     session = new Session(course.session().id(),course.session().semester(), course.session().title());
@@ -95,15 +97,19 @@ public class MainActivityPresenter {
                     // get level value
                     level = course.level();
                     _courses = new ArrayList<>();
-                    for (GetRegisteredCoursesQuery.Course course1 : course.courses()){
+                    for (GetRegisteredCoursesQuery.Course course1 : Objects.requireNonNull(course.courses())){
 
 
                         ArrayList<Lecturer> lecturerArrayList = new ArrayList<>();
-                        for (GetRegisteredCoursesQuery.Assgined_lecturer lecturer : course1.course().assgined_lecturers()){
 
-                           lecturerArrayList.add(new Lecturer(lecturer.id(),lecturer.name(),null,
-                                   lecturer.email(),lecturer.fingerprint()));
-                       }
+                        if (course1.course().assgined_lecturers() != null){
+                            for (GetRegisteredCoursesQuery.Assgined_lecturer lecturer : Objects.requireNonNull(course1.course().assgined_lecturers())){
+
+                                lecturerArrayList.add(new Lecturer(lecturer.id(),lecturer.name(),null,
+                                        lecturer.email(),lecturer.fingerprint()));
+                            }
+                        }
+
                         _courses.add(new Course(course1.course().id(),course1.course().title(),
                                 course1.course().code(),course1.course().credit_unit(),course1.course().semester(),
                                 lecturerArrayList));

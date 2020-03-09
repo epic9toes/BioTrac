@@ -23,6 +23,7 @@ import android.os.Message;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -143,7 +144,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     private TextView mErrorMsg, totalCount, presentCount, absentCount;
     private Button mTryAgainButton, mCancelButton, closeSummary;
     private TextView stdUsername, stdDepartment, stdRegNo;
-    private AppCompatImageView stdUserImg;
+    private ImageView stdUserImg;
     boolean attendanceEnded = false;
 
 
@@ -474,7 +475,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         switch (sendbuf[4]) {
 
             case CMD_CAPTUREHOST:
-                Toast.makeText(this, "Capture Template ...", Toast.LENGTH_SHORT).show();
                 break;
 
         }

@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg"
+    tools:context=".MainActivity"
+    tools:ignore="RtlCompat">
+
+    <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1.5">
+
+        <TextView
+            android:id="@+id/welcome_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textAllCaps="true"
+            android:textSize="32sp"
+            android:paddingTop="10dp"
+            android:paddingLeft="15dp"
+            android:textColor="@color/secondaryText"
+            android:text="Welcome Back"/>
+
+        <TextView
+            android:layout_below="@id/welcome_txt"
+            android:id="@+id/user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:lines="1"
+            android:ems="9"
+            android:ellipsize="end"
+            android:textColor="@color/primaryText"
+            android:textSize="48sp"
+            android:paddingLeft="15dp"
+            android:text="Mohammed Ali"/>
+
+        <LinearLayout
+            android:id="@+id/photoPanel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginRight="25dp"
+            android:layout_marginTop="5dp"
+            android:background="@color/colorPrimaryDark">
+
+            <ImageView
+                android:id="@+id/profileImg"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:src="@drawable/avatar"
+                android:scaleType="centerCrop"/>
+
+        </LinearLayout>
+
+
+        <Button
+            android:id="@+id/signOut"
+            android:layout_below="@id/photoPanel"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Sign Out"
+            android:textAlignment="center"
+            android:textColor="@color/whiteColor"
+            android:background="@drawable/rounded_btn"
+            android:drawablePadding="10dp"
+            android:paddingLeft="45dp"
+            android:paddingRight="45dp"
+            android:paddingTop="25dp"
+            android:paddingBottom="25dp"
+            android:textSize="30sp"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="10dp"
+            android:layout_gravity="center"/>
+
+    </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2">
+        <include  android:visibility="visible" android:id="@+id/admin_menu" layout="@layout/admin_menu"/>
+        <include  android:visibility="visible"  android:id="@+id/student_menu" layout="@layout/student_menu"/>
+
+    </LinearLayout>
+
+</androidx.appcompat.widget.LinearLayoutCompat>

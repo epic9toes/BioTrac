@@ -47,7 +47,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
     private ImageView closeBtn;
     private Button btnRetry;
 
-    ArrayList<Student> mStudents;
+    ArrayList<Student> mStudents = new ArrayList<>();
     RecyclerView mRecyclerView;
     StudentListAdapter mListAdapter;
     String token, dept_id;

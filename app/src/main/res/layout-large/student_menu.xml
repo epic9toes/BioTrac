@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:padding="10dp">
+
+    <!--    1st option-->
+    <LinearLayout
+        android:id="@+id/enroll_student"
+        android:layout_marginBottom="20dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/rounded_rectangle"
+        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_student"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/secondaryText"
+            android:textSize="24sp"
+            android:textStyle="normal"
+            android:textAlignment="center"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp"
+            android:maxLines="100"
+            android:scrollHorizontally="false"
+            android:ellipsize="none"
+            android:text="Enroll Student"
+            android:paddingBottom="10dp"
+            android:gravity="center_horizontal" />
+    </LinearLayout>
+
+    <!--    2nd  option-->
+    <LinearLayout
+        android:id="@+id/start_attendance"
+        android:layout_marginBottom="20dp"
+        android:focusable="true"
+        android:clickable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/rounded_rectangle"
+        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_weight="1">
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_fingerprint_scan"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/secondaryText"
+            android:textSize="24sp"
+            android:textStyle="normal"
+            android:paddingRight="5dp"
+            android:paddingLeft="5dp"
+            android:maxLines="100"
+            android:scrollHorizontally="false"
+            android:ellipsize="none"
+            android:textAlignment="center"
+            android:text="Start Attendance"
+            android:paddingBottom="10dp"
+            android:gravity="center_horizontal" />
+    </LinearLayout>
+
+</LinearLayout>

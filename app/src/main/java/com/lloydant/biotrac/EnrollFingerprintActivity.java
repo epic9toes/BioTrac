@@ -105,9 +105,9 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
 
     private Dialog mEnrollmentSuccessfulDialog, mEnrollmentErrorDialog;
     private Button ConnectBluetoothBtn, onEnrollmentSucess, onEnrollmentError;
-    private TextView DeviceName, errorMsg;
+    private TextView  errorMsg;
     private ImageView backBtn;
-    private View StartPanel, BTSearchPanel, deviceInfoPanel, loadingPanel;
+    private View StartPanel, BTSearchPanel, loadingPanel;
     private TextView mUsernameTextView;
     private String name;
     private String token;
@@ -138,12 +138,10 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
         backBtn = findViewById(R.id.backBtn);
-        DeviceName = findViewById(R.id.deviceName);
         ConnectBluetoothBtn = findViewById(R.id.searchBT);
         StartPanel = findViewById(R.id.startPanel);
         BTSearchPanel = findViewById(R.id.searchBtPanel);
         loadingPanel = findViewById(R.id.loadingPanel);
-        deviceInfoPanel = findViewById(R.id.deviceInfoPanel);
         mUsernameTextView = findViewById(R.id.username);
 
         mEnrollmentSuccessfulDialog = new Dialog(this);
@@ -240,8 +238,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
                         case BluetoothReaderService.STATE_CONNECTED:
                             BTSearchPanel.setVisibility(View.GONE);
                             StartPanel.setVisibility(View.VISIBLE);
-                            deviceInfoPanel.setVisibility(View.VISIBLE);
-                            DeviceName.setText(mConnectedDeviceName);
                             SendCommand(CMD_ENROLHOST, null, 0);
                             break;
                         case BluetoothReaderService.STATE_CONNECTING:
