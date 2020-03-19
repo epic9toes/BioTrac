@@ -10,6 +10,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -30,6 +32,8 @@ import com.lloydant.biotrac.presenters.EnrollFingerprintPresenter;
 import com.lloydant.biotrac.views.EnrollFingerprintActivityView;
 
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -54,13 +58,12 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
 
 
     //other image size
-    public static final int IMG200 = 200;
-    public static final int IMG288 = 288;
     public static final int IMG360 = 360;
 
+    private int imgSize;
 
+    public int mMatSize = 0;
     private byte mCmdData[] = new byte[10240];
-
     private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
 
 
@@ -88,13 +91,20 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     public int mRefSize = 0;
 
 
-    private final static byte CMD_ENROLHOST = 0x07;    //Enroll to Host
+
+    private final static byte CMD_GETCHAR = 0x31;       //GETDATA
+
+
+    public byte mMatData[] = new byte[512];  // match FP template data
 
     private byte mDeviceCmd = 0x00;
     private int mCmdSize = 0;
     private boolean mIsWork = false;
 
 
+    public byte mUpImage[] = new byte[73728]; // image data
+    public int mUpImageSize = 0;
+    public int mUpImageCount = 0;
 
     //dynamic setting of the permission for writing the data into phone memory
     private int REQUEST_PERMISSION_CODE = 1;
@@ -103,8 +113,8 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
             Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
 
-    private Dialog mEnrollmentSuccessfulDialog, mEnrollmentErrorDialog;
-    private Button ConnectBluetoothBtn, onEnrollmentSucess, onEnrollmentError;
+    private Dialog mEnrollmentSuccessfulDialog, mEnrollmentErrorDialog, mFingerprintDialog;
+    private Button ConnectBluetoothBtn, onEnrollmentSucess, onEnrollmentError, onCapture, onConfirmCapture;
     private TextView  errorMsg;
     private ImageView backBtn;
     private View StartPanel, BTSearchPanel, loadingPanel;
@@ -112,6 +122,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     private String name;
     private String token;
     private String lecturerID, studentID;
+    private ImageView fingerprintImage;
 
     @Inject
     SharedPreferences mPreferences;
@@ -128,6 +139,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     private Timer mTimerTimeout = null;
     private TimerTask mTaskTimeout = null;
     private Handler mHandlerTimeout;
+    String JsonString; // fingerprint data gotten from the device
 
 
     @Override
@@ -144,12 +156,29 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         loadingPanel = findViewById(R.id.loadingPanel);
         mUsernameTextView = findViewById(R.id.username);
 
+        mFingerprintDialog = new Dialog(this);
+        mFingerprintDialog.setContentView(R.layout.fingerprint_image);
+        mFingerprintDialog.setCancelable(false);
+        fingerprintImage =  mFingerprintDialog.findViewById(R.id.fingerprint);
+
+        onCapture = mFingerprintDialog.findViewById(R.id.captureBtn);
+        onCapture.setOnClickListener(view -> {
+            imgSize = IMG360;
+            mUpImageSize = 0;
+            SendCommand(CMD_GETIMAGE, null, 0);
+        });
+
+        onConfirmCapture = mFingerprintDialog.findViewById(R.id.confirmBtn);
+
+
         mEnrollmentSuccessfulDialog = new Dialog(this);
         mEnrollmentSuccessfulDialog.setContentView(R.layout.enroll_success_dialog);
         mEnrollmentSuccessfulDialog.setCanceledOnTouchOutside(false);
         onEnrollmentSucess = mEnrollmentSuccessfulDialog.findViewById(R.id.doneBtn);
         onEnrollmentSucess.setOnClickListener(view -> {
+
             mEnrollmentSuccessfulDialog.dismiss();
+            mFingerprintDialog.dismiss();
             finish();
         });
 
@@ -159,9 +188,11 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
         onEnrollmentError = mEnrollmentErrorDialog.findViewById(R.id.errorBtn);
         errorMsg = mEnrollmentErrorDialog.findViewById(R.id.errorMsg);
         onEnrollmentError.setOnClickListener(view -> {
-            StartPanel.setVisibility(View.VISIBLE);
+
             mEnrollmentErrorDialog.dismiss();
-            SendCommand(CMD_ENROLHOST, null, 0);
+            mFingerprintDialog.dismiss();
+            StartPanel.setVisibility(View.VISIBLE);
+            SendCommand(CMD_GETIMAGE, null, 0);
 
         });
 
@@ -238,7 +269,9 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
                         case BluetoothReaderService.STATE_CONNECTED:
                             BTSearchPanel.setVisibility(View.GONE);
                             StartPanel.setVisibility(View.VISIBLE);
-                            SendCommand(CMD_ENROLHOST, null, 0);
+                            imgSize = IMG360;
+                            mUpImageSize = 0;
+                            SendCommand(CMD_GETIMAGE, null, 0);
                             break;
                         case BluetoothReaderService.STATE_CONNECTING:
                             Toast.makeText(EnrollFingerprintActivity.this, "Trying to connect...", Toast.LENGTH_SHORT).show();
@@ -422,11 +455,114 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
 
         switch (sendbuf[4]) {
 
-            case CMD_ENROLHOST:
-                Toast.makeText(this, "Enroll Template ...", Toast.LENGTH_SHORT).show();
+            case CMD_GETIMAGE:
+                mUpImageSize = 0;
                 break;
-
+            case CMD_GETCHAR:
+                break;
         }
+    }
+
+
+    private byte[] changeByte(int data) {
+        byte b4 = (byte) ((data) >> 24);
+        byte b3 = (byte) (((data) << 8) >> 24);
+        byte b2 = (byte) (((data) << 16) >> 24);
+        byte b1 = (byte) (((data) << 24) >> 24);
+        byte[] bytes = {b1, b2, b3, b4};
+        return bytes;
+    }
+
+
+    /**
+     * generate the image data into Bitmap format
+     * @param width width of the image
+     * @param height height of the image
+     * @param data image data
+     * @return bitmap image data
+     */
+    private byte[] toBmpByte(int width, int height, byte[] data) {
+        byte[] buffer = null;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+
+            int bfType = 0x424d;
+            int bfSize = 54 + 1024 + width * height;
+            int bfReserved1 = 0;
+            int bfReserved2 = 0;
+            int bfOffBits = 54 + 1024;
+
+            dos.writeShort(bfType);
+            dos.write(changeByte(bfSize), 0, 4);
+            dos.write(changeByte(bfReserved1), 0, 2);
+            dos.write(changeByte(bfReserved2), 0, 2);
+            dos.write(changeByte(bfOffBits), 0, 4);
+
+            int biSize = 40;
+            int biWidth = width;
+            int biHeight = height;
+            int biPlanes = 1;
+            int biBitcount = 8;
+            int biCompression = 0;
+            int biSizeImage = width * height;
+            int biXPelsPerMeter = 0;
+            int biYPelsPerMeter = 0;
+            int biClrUsed = 256;
+            int biClrImportant = 0;
+
+            dos.write(changeByte(biSize), 0, 4);
+            dos.write(changeByte(biWidth), 0, 4);
+            dos.write(changeByte(biHeight), 0, 4);
+            dos.write(changeByte(biPlanes), 0, 2);
+            dos.write(changeByte(biBitcount), 0, 2);
+            dos.write(changeByte(biCompression), 0, 4);
+            dos.write(changeByte(biSizeImage), 0, 4);
+            dos.write(changeByte(biXPelsPerMeter), 0, 4);
+            dos.write(changeByte(biYPelsPerMeter), 0, 4);
+            dos.write(changeByte(biClrUsed), 0, 4);
+            dos.write(changeByte(biClrImportant), 0, 4);
+
+            byte[] palatte = new byte[1024];
+            for (int i = 0; i < 256; i++) {
+                palatte[i * 4] = (byte) i;
+                palatte[i * 4 + 1] = (byte) i;
+                palatte[i * 4 + 2] = (byte) i;
+                palatte[i * 4 + 3] = 0;
+            }
+            dos.write(palatte);
+
+            dos.write(data);
+            dos.flush();
+            buffer = baos.toByteArray();
+            dos.close();
+            baos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return buffer;
+    }
+
+
+    /**
+     * generate the fingerprint image
+     * @param data image data
+     * @param width width of the image
+     * @param height height of the image
+     * @param offset default setting as 0
+     * @return bitmap image data
+     */
+    public byte[] getFingerprintImage(byte[] data, int width, int height, int offset) {
+        if (data == null) {
+            return null;
+        }
+        byte[] imageData = new byte[width * height];
+        for (int i = 0; i < (width * height / 2); i++) {
+            imageData[i * 2] = (byte) (data[i + offset] & 0xf0);
+            imageData[i * 2 + 1] = (byte) (data[i + offset] << 4 & 0xf0);
+        }
+        byte[] bmpData = toBmpByte(width, height, imageData);
+        return bmpData;
     }
 
 
@@ -437,7 +573,29 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
      */
     private void ReceiveCommand(byte[] databuf, int datasize) {
         if (mDeviceCmd == CMD_GETIMAGE) { //receiving the image data from the device
-            Toast.makeText(this, "This is for image convertion", Toast.LENGTH_SHORT).show();
+            if (imgSize == IMG360) {   //image size with 256*360
+                memcpy(mUpImage, mUpImageSize, databuf, 0, datasize);
+                mUpImageSize = mUpImageSize + datasize;
+
+                if (mUpImageSize >= 46080) {
+                    byte[] bmpdata = getFingerprintImage(mUpImage, 256, 360, 0/*18*/);
+                    Bitmap image = BitmapFactory.decodeByteArray(bmpdata, 0, bmpdata.length);
+
+                    byte[] inpdata = new byte[92160];
+                    int inpsize = 92160;
+                    System.arraycopy(bmpdata, 1078, inpdata, 0, inpsize);
+                    fingerprintImage.setImageBitmap(image);
+                    mUpImageSize = 0;
+                    mUpImageCount = mUpImageCount + 1;
+                    mIsWork = false;
+
+                    SendCommand(CMD_GETCHAR, null, 0);
+
+                } else if (mUpImageSize == 10){
+                    mFingerprintDialog.dismiss();
+                    mEnrollmentErrorDialog.show();
+                }
+            }
         } else { //other data received from the device
             // append the databuf received into mCmdData.
             memcpy(mCmdData, mCmdSize, databuf, 0, datasize);
@@ -451,33 +609,41 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
                 //parsing the mCmdData
                 if ((mCmdData[0] == 'F') && (mCmdData[1] == 'T')) {
                     switch (mCmdData[4]) {
-                        case CMD_ENROLHOST: {
+
+                        case CMD_GETCHAR: {
                             int size = (byte) (mCmdData[5]) + ((mCmdData[6] << 8) & 0xFF00) - 1;
                             if (mCmdData[7] == 1) {
-                                memcpy(mRefData, 0, mCmdData, 8, size);
-                                mRefSize = size;
-                                String JsonString = mFingerprintConverter.ByteToJsonString(mRefData);
+                                memcpy(mMatData, 0, mCmdData, 8, size);
+                                mMatSize = size;
+                                JsonString = mFingerprintConverter.ByteToJsonString(mMatData);
 
-                                    //                            Send to database through graphQl
+                                onConfirmCapture.setOnClickListener(view -> {
+
+                                    // Send to database through graphQl
                                     if (getIntent().getExtras().getString(LecturerActivity) != null) {
+
                                         lecturerID = getIntent().getExtras().getString("LecturerID", "Lecturer ID");
-
-//                                  finally, uploading it to the server
-                                        mPresenter.UploadLecturerFingerprint(token, lecturerID, JsonString);
-                                    } else if (getIntent().getExtras().getString(StudentActivity) != null) {
-                                        studentID = getIntent().getExtras().getString("StudentID", "Student ID");
-
-//                                  finally, uploading it to the server
-                                        mPresenter.UploadStudentFingerprint(token, studentID, JsonString);
+                                //   finally, uploading it to the server
+                                    mPresenter.UploadLecturerFingerprint(token, lecturerID, JsonString);
                                     }
+                                    else if (getIntent().getExtras().getString(StudentActivity) != null) {
 
+                              studentID = getIntent().getExtras().getString("StudentID", "Student ID");
+                                // finally, uploading it to the server
+                             mPresenter.UploadStudentFingerprint(token, studentID, JsonString);
+                               }
+                                    mFingerprintDialog.dismiss();
                                     loadingPanel.setVisibility(View.VISIBLE);
                                     StartPanel.setVisibility(View.GONE);
+                                });
 
-
-                            }else  mEnrollmentErrorDialog.show();
-                            break;
+                                mEnrollmentErrorDialog.dismiss();
+                                mFingerprintDialog.show();
+                            } else  mEnrollmentErrorDialog.show();
                         }
+                        break;
+
+
                     }
                 }
             }
@@ -528,6 +694,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     @Override
     public void OnLecturerFingerprintUploaded(String message) {
         loadingPanel.setVisibility(View.GONE);
+        mFingerprintDialog.dismiss();
         mEnrollmentSuccessfulDialog.show();
         mEnrollmentErrorDialog.dismiss();
     }
@@ -535,6 +702,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     @Override
     public void OnStudentFingerprintUploaded(String message) {
         loadingPanel.setVisibility(View.GONE);
+        mFingerprintDialog.dismiss();
         mEnrollmentSuccessfulDialog.show();
         mEnrollmentErrorDialog.dismiss();
     }
@@ -543,11 +711,13 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     public void OnFingerprintUploadFailed() {
         errorMsg.setText("Fingerprint Upload not successful!");
         mEnrollmentErrorDialog.show();
+        mFingerprintDialog.dismiss();
     }
 
     @Override
     public void OnFingerprintUploadError(Throwable e) {
         errorMsg.setText("Error: " + e.getMessage());
+        mFingerprintDialog.dismiss();
         mEnrollmentErrorDialog.show();
     }
 }
