@@ -50,6 +50,9 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
     private String token;
     private Button btnRetry;
 
+    //new array list that will hold the filtered data
+    ArrayList<Lecturer> lecturers = new ArrayList<>();
+
     public  static  final String LecturerActivity = "LecturerActivity";
 
     @Override
@@ -103,8 +106,6 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
     }
 
     private void filterRecycler(String text) {
-        //new array list that will hold the filtered data
-        ArrayList<Lecturer> lecturers = new ArrayList<>();
 
         //looping through existing elements
         for (Lecturer lecturer : mLecturerArrayList) {
@@ -121,8 +122,16 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
 
     @Override
     public void onLecturerClick(View view, int position) {
-        String name = mLecturerArrayList.get(position).getName();
-        String id = mLecturerArrayList.get(position).getId();
+        String name;
+        String id;
+
+        if (!lecturers.isEmpty()){
+            name = lecturers.get(position).getName();
+            id = lecturers.get(position).getId();
+        } else {
+            name = mLecturerArrayList.get(position).getName();
+            id = mLecturerArrayList.get(position).getId();
+        }
         Intent intent = new Intent(LecturerSearchActivity.this, EnrollFingerprintActivity.class);
         intent.putExtra("LecturerName", name);
         intent.putExtra("LecturerID",id);
