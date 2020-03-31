@@ -530,6 +530,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
                                         intent.putExtra("departmentalCourse", departmentalCourse);
                                         intent.putExtra("lecturerFingerprint", lecturer.getFingerprint());
                                         startActivity(intent);
+                                        finish();
                                         matchFlag = true;
                                         break;
                                     }

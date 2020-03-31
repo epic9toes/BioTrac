@@ -53,7 +53,7 @@
             android:paddingBottom="5dp"
             android:textSize="18sp"
             android:layout_below="@id/closeBtn"
-            android:hint="Enter Reg Number"
+            android:hint="Enter Reg Number or Email"
             android:background="@drawable/rounded_white"
             android:layout_marginStart="10dp"
             android:layout_marginEnd="10dp"
@@ -123,7 +123,7 @@
                 android:textAlignment="center"
                 android:textColor="@color/secondaryText"
                 android:padding="10dp"
-                android:text="Search for s with a valid Reg No to see results."/>
+                android:text="Search for student with a valid Reg no or email to see results."/>
 
         </LinearLayout>
         <include android:visibility="gone" layout="@layout/loading" android:id="@+id/loading"/>

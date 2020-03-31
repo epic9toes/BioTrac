@@ -51,7 +51,7 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
     private Button btnRetry;
 
     //new array list that will hold the filtered data
-    ArrayList<Lecturer> lecturers = new ArrayList<>();
+    ArrayList<Lecturer> lecturers;
 
     public  static  final String LecturerActivity = "LecturerActivity";
 
@@ -107,6 +107,7 @@ public class LecturerSearchActivity extends AppCompatActivity implements Lecture
 
     private void filterRecycler(String text) {
 
+        lecturers = new ArrayList<>();
         //looping through existing elements
         for (Lecturer lecturer : mLecturerArrayList) {
             //if the existing elements contains the search input

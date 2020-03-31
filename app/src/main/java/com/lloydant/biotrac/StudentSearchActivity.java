@@ -54,7 +54,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
     int level;
 
     public  static  final String StudentActivity = "StudentActivity";
-
+    ArrayList<Student> students;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +79,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
 
         mPresenter = new StudentSearchActivityPresenter(this,mStudentSearchRepo);
         token = mPreferences.getString("token", "Token not found!");
-        dept_id = mPreferences.getString("dept_id", "Depertment not found!");
+        dept_id = mPreferences.getString("dept_id", "Department not found!");
         level = mPreferences.getInt("level", 0);
         mPresenter.GetStudentsByDepartment(token, dept_id,level );
 
@@ -109,7 +109,7 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
 
     private void filterRecycler(String text) {
         //new array list that will hold the filtered data
-        ArrayList<Student> students = new ArrayList<>();
+        students = new ArrayList<>();
 
         //looping through existing elements
         for (Student student: mStudents) {
@@ -127,8 +127,14 @@ public class StudentSearchActivity extends AppCompatActivity implements StudentL
 
     @Override
     public void onStudentClick(View view, int position) {
-        String name = mStudents.get(position).getName();
-        String id = mStudents.get(position).getId();
+        String name, id;
+        if (!students.isEmpty()){
+            name = students.get(position).getName();
+            id = students.get(position).getId();
+        } else {
+            name = mStudents.get(position).getName();
+            id = mStudents.get(position).getId();
+        }
         Intent intent = new Intent(StudentSearchActivity.this, EnrollFingerprintActivity.class);
         intent.putExtra("StudentName", name);
         intent.putExtra("StudentID",id);

@@ -1,50 +1,63 @@
 package com.lloydant.biotrac.presenters;
 
-import com.apollographql.apollo.api.Response;
-import com.lloydant.biotrac.Repositories.implementations.AttendanceRepo;
-import com.lloydant.biotrac.UploadAttendanceMutation;
+import android.util.Log;
+
 import com.lloydant.biotrac.views.AttendanceActivityView;
 
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.observers.DisposableObserver;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.io.IOException;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class AttendanceActivityPresenter {
 
     AttendanceActivityView mView;
-    AttendanceRepo mRepo;
 
-    CompositeDisposable mDisposable = new CompositeDisposable();
+    private OkHttpClient okHttpClient;
 
-    public AttendanceActivityPresenter(AttendanceActivityView view, AttendanceRepo repo) {
+    public AttendanceActivityPresenter(AttendanceActivityView view, OkHttpClient okHttpClient) {
         mView = view;
-        mRepo = repo;
-    }
-
-    public void UploadAttendance(String token, String filePath){
-
-        mDisposable.add(mRepo.UploadAttendance(token,filePath).subscribeWith(
-                new DisposableObserver<Response<UploadAttendanceMutation.Data>>() {
-            @Override
-            public void onNext(Response<UploadAttendanceMutation.Data> dataResponse) {
-                if (dataResponse.data().UploadAttendance().status() == 200){
-                    mView.OnAttendanceUploaded(dataResponse.data().UploadAttendance().message());
-                } else mView.OnUploadAttendanceFailed("Upload failed!");
-            }
-
-            @Override
-            public void onError(Throwable e) {
-            mView.OnUploadAttendanceError(e);
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        }));
+        this.okHttpClient = okHttpClient;
     }
 
 
-    public void DestroyDisposables(){
-        mDisposable.clear();
+    public void UploadAttendanceData(String token, File file, String filepath){
+        RequestBody body = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                .addFormDataPart("file",filepath,
+                        RequestBody.create(MediaType.parse("application/octet-stream"),
+                                file))
+                .build();
+        Request request = new Request.Builder()
+                .url("https://unizik-attendance.netlify.com/.netlify/functions/upload-attendance-func")
+                .method("POST", body)
+                .addHeader("Authorization", "Bearer " +  token)
+                .build();
+
+        // Get okhttp3.Call object.
+        Call call = okHttpClient.newCall(request);
+
+        call.enqueue(new Callback() {
+
+            @Override
+            public void onResponse(@NotNull Call call, @NotNull okhttp3.Response response) throws IOException {
+                if (response.code() == 200){
+                    mView.OnAttendanceUploaded("Attendance uploaded successfully!");
+                }else mView.OnUploadAttendanceFailed("Attendance upload failed, something went wrong!");
+            }
+
+            @Override
+            public void onFailure(@NotNull Call call, @NotNull IOException e) {
+              mView.OnUploadAttendanceError(e);
+            }
+        });
     }
+
 }
