@@ -4,6 +4,7 @@ package com.lloydant.biotrac.dagger2;
 import android.content.Context;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import dagger.Module;
 import dagger.Provides;
@@ -28,7 +29,11 @@ public class NetworkModule {
     @BioTracApplicationScope
     @Provides
     public OkHttpClient provideOkHttpClient(Cache cache) {
-        return new OkHttpClient.Builder().cache(cache).build();
+        return new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .cache(cache).build();
     }
 
 }

@@ -19,8 +19,9 @@ import com.lloydant.biotrac.Repositories.implementations.UpdateFingerprintRepo;
 
 import dagger.Module;
 import dagger.Provides;
+import okhttp3.OkHttpClient;
 
-@Module(includes = {NetworkModule.class})
+@Module(includes = {NetworkModule.class, AppModule.class})
 public class RepoModule {
 
     @BioTracApplicationScope
@@ -37,8 +38,8 @@ public class RepoModule {
 
     @BioTracApplicationScope
     @Provides
-    public IAttendanceRepository mIAttendanceRepository(){
-        return new AttendanceRepo();
+    public IAttendanceRepository mIAttendanceRepository(OkHttpClient okHttpClient){
+        return new AttendanceRepo(okHttpClient);
     }
 
     @BioTracApplicationScope

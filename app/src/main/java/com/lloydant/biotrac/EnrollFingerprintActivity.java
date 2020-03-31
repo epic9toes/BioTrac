@@ -86,10 +86,6 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
     // Member object for the chat services
     private BluetoothReaderService mChatService;
 
-    //definition of variables which used for storing the fingerprint template
-    public byte mRefData[] = new byte[512]; //enrolled FP template data
-    public int mRefSize = 0;
-
 
 
     private final static byte CMD_GETCHAR = 0x31;       //GETDATA

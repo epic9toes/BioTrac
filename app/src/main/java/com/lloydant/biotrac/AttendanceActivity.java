@@ -27,6 +27,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
+import com.androidnetworking.error.ANError;
+import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
 import com.google.gson.Gson;
@@ -45,6 +49,12 @@ import com.lloydant.biotrac.presenters.AttendanceActivityPresenter;
 import com.lloydant.biotrac.views.AttendanceActivityView;
 import com.squareup.picasso.Picasso;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -54,6 +64,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import javax.inject.Inject;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_DEVICE_NAME;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_READ;
@@ -136,6 +155,9 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     @Inject
     Picasso mPicasso;
 
+    @Inject
+    OkHttpClient okHttpClient;
+
     private ArrayList<AttendanceStudentObj> mAttendanceStudentObjs = new ArrayList<>();
     private ArrayList<Coursemate> coursemates =  new ArrayList<>();
 
@@ -166,6 +188,8 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         setContentView(R.layout.activity_attendance);
 
         ((BioTracApplication) getApplication()).getAppComponent().inject(this);
+
+        AndroidNetworking.initialize(getApplicationContext());
 
         mLoading = findViewById(R.id.loading);
         username = findViewById(R.id.username);
@@ -211,7 +235,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
             startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
         });
 
-        mPresenter = new AttendanceActivityPresenter(this, mAttendanceRepo);
+        mPresenter = new AttendanceActivityPresenter(this, okHttpClient);
 
         Date today = Calendar.getInstance().getTime();//getting date
         SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
@@ -382,7 +406,6 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         super.onDestroy();
         // Stop the Bluetooth chat services
         if (mChatService != null) mChatService.stop();
-        mPresenter.DestroyDisposables();
     }
 
     /**
@@ -696,15 +719,19 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
 
         mStorageHelper.saveJsonFile(filename, jsonString, "Attendance");
         String filepath = mStorageHelper.getFilePath(filename + ".json","Attendance");
+        File file = new File(filepath);
 
         if (mNetworkCheck.isNetworkAvailable()){
-            mPresenter.UploadAttendance(token, filepath);
+
             mLoading.setVisibility(View.VISIBLE);
-        }else{
+            mPresenter.UploadAttendanceData(token,file, filepath);
+
+        } else{
             mLoading.setVisibility(View.GONE);
             Toast.makeText(this, "Attendance saved for later push!", Toast.LENGTH_SHORT).show();
             finish();
         }
+
     }
 
     private void ShowErrorPanelControls(){
@@ -752,4 +779,5 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         mLoading.setVisibility(View.GONE);
         finish();
     }
+
 }

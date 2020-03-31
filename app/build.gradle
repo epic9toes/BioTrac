@@ -61,6 +61,9 @@ dependencies {
     implementation 'com.apollographql.apollo:apollo-runtime:1.3.0'
     implementation "com.apollographql.apollo:apollo-android-support:1.3.0"
 
+    //Using Fast Android Networking Library to upload files
+    implementation 'com.amitshekhar.android:android-networking:1.0.2'
+
     // Animated images support
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.19'
 

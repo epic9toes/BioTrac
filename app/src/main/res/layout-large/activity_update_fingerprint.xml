@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".EnrollFingerprintActivity"
+    tools:context=".UpdateFingerprintActivity"
     android:background="@color/whiteColor">
 
     <RelativeLayout
@@ -114,7 +114,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:visibility="visible"
         android:id="@+id/searchBtPanel"
         android:layout_weight="2"
         android:layout_width="match_parent"

@@ -20,9 +20,9 @@ public class StorageHelper {
         mContext = context;
     }
 
-    public boolean checkUserFolderExist(String studentID){
+    public boolean checkUserFolderExist(String ownerFolder){
         if (mContext.getFilesDir().exists()){
-            File folder = new File(mContext.getFilesDir() + "/" + studentID);
+            File folder = new File(mContext.getFilesDir() + "/" + ownerFolder);
             if (folder.exists()){
                 return true;
             }
@@ -31,9 +31,9 @@ public class StorageHelper {
         return false;
     }
 
-    public String createUserFolder(String studentID){
-        String pathname = mContext.getFilesDir() + "/" + studentID + "/";
-        if (!checkUserFolderExist(studentID)){
+    public String createUserFolder(String ownerFolder){
+        String pathname = mContext.getFilesDir() + "/" + ownerFolder + "/";
+        if (!checkUserFolderExist(ownerFolder)){
             File folder = new File(pathname);
             folder.mkdir();
         }

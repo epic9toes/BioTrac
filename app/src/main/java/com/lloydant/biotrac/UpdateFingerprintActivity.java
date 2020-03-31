@@ -9,6 +9,8 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -30,6 +32,8 @@ import com.lloydant.biotrac.helpers.FingerprintConverter;
 import com.lloydant.biotrac.presenters.UpdateFingerprintActivityPresenter;
 import com.lloydant.biotrac.views.UpdateFingerprintView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -45,14 +49,17 @@ import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_STATE
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_TOAST;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_WRITE;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.TOAST;
+import static com.lloydant.biotrac.LecturerSearchActivity.LecturerActivity;
+import static com.lloydant.biotrac.StudentSearchActivity.StudentActivity;
 
 public class UpdateFingerprintActivity extends AppCompatActivity implements UpdateFingerprintView {
 
-    Dialog mSuccessDialog, mErrorDialog;
+    Dialog mErrorDialog, mFingerprintDialog, mEnrollmentSuccessfulDialog;
     ImageView backBtn;
     TextView username;
+    private ImageView fingerprintImage;
 
-    private Button ConnectBluetoothBtn,  onUpdateSucess, onUpdateError, cancelBtn;
+    private Button ConnectBluetoothBtn, onUpdateSuccess, onUpdateError, cancelBtn;
 
     private View StartPanel, BTSearchPanel,  loadingPanel;
 
@@ -83,17 +90,22 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
     private byte mDeviceCmd = 0x00;
     private int mCmdSize = 0;
     private boolean mIsWork = false;
-    private byte mCmdData[] = new byte[10240];
 
-    private final static byte CMD_ENROLHOST = 0x07;    //Enroll to Host
-    private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
+    private final static byte CMD_GETCHAR = 0x31;       //GETDATA
 
     public static final String TAG = "BluetoothReader";
 
+    //other image size
+    public static final int IMG360 = 360;
 
-    //definition of variables which used for storing the fingerprint template
-    public byte mRefData[] = new byte[512]; //enrolled FP template data
-    public int mRefSize = 0;
+    private int imgSize;
+    public byte mUpImage[] = new byte[73728]; // image data
+    public int mUpImageSize = 0;
+    public int mUpImageCount = 0;
+
+    public int mMatSize = 0;
+    private byte mCmdData[] = new byte[10240];
+    private final static byte CMD_GETIMAGE = 0x30;      //GETIMAGE
 
     UpdateFingerprintActivityPresenter mPresenter;
     private String token;
@@ -118,6 +130,11 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
     private Handler mHandlerTimeout;
 
 
+    private Dialog mEnrollmentErrorDialog;
+    private Button onEnrollmentSucess, onEnrollmentError, onCapture, onConfirmCapture;
+
+    public byte mMatData[] = new byte[512];  // match FP template data
+    String JsonString; // fingerprint data gotten from the device
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -126,39 +143,51 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
 
         ((BioTracApplication) getApplication()).getAppComponent().inject(this);
 
-        mSuccessDialog = new Dialog(this);
-        mSuccessDialog.setContentView(R.layout.update_success_dialog);
-        mSuccessDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mSuccessDialog.setCanceledOnTouchOutside(false);
-        onUpdateSucess = mSuccessDialog.findViewById(R.id.doneBtn);
-        onUpdateSucess.setOnClickListener(view -> {
-            mSuccessDialog.dismiss();
-            finish();
-        });
-
-
-        mErrorDialog = new Dialog(this);
-        mErrorDialog.setContentView(R.layout.update_error_dialog);
-        mErrorDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        mErrorDialog.setCanceledOnTouchOutside(false);
-        cancelBtn = mErrorDialog.findViewById(R.id.cancelBtn);
-        errorMsg = mErrorDialog.findViewById(R.id.errorMsg);
-        onUpdateError = mErrorDialog.findViewById(R.id.errorBtn);
-        onUpdateError.setOnClickListener(view -> {
-            loadingPanel.setVisibility(View.GONE);
-            StartPanel.setVisibility(View.VISIBLE);
-            mErrorDialog.dismiss();
-            SendCommand(CMD_ENROLHOST, null, 0);
-        });
-        cancelBtn.setOnClickListener(view -> finish());
-
         backBtn = findViewById(R.id.backBtn);
-        username = findViewById(R.id.username);
-        loadingPanel = findViewById(R.id.loadingPanel);
-
         ConnectBluetoothBtn = findViewById(R.id.searchBT);
         StartPanel = findViewById(R.id.startPanel);
         BTSearchPanel = findViewById(R.id.searchBtPanel);
+        loadingPanel = findViewById(R.id.loadingPanel);
+        username = findViewById(R.id.username);
+
+        mFingerprintDialog = new Dialog(this);
+        mFingerprintDialog.setContentView(R.layout.fingerprint_image);
+        mFingerprintDialog.setCancelable(false);
+        fingerprintImage =  mFingerprintDialog.findViewById(R.id.fingerprint);
+
+        onCapture = mFingerprintDialog.findViewById(R.id.captureBtn);
+        onCapture.setOnClickListener(view -> {
+            imgSize = IMG360;
+            mUpImageSize = 0;
+            SendCommand(CMD_GETIMAGE, null, 0);
+        });
+
+        onConfirmCapture = mFingerprintDialog.findViewById(R.id.confirmBtn);
+
+
+        mEnrollmentSuccessfulDialog = new Dialog(this);
+        mEnrollmentSuccessfulDialog.setContentView(R.layout.enroll_success_dialog);
+        mEnrollmentSuccessfulDialog.setCanceledOnTouchOutside(false);
+        onEnrollmentSucess = mEnrollmentSuccessfulDialog.findViewById(R.id.doneBtn);
+        onEnrollmentSucess.setOnClickListener(view -> {
+
+            mEnrollmentSuccessfulDialog.dismiss();
+            mFingerprintDialog.dismiss();
+            finish();
+        });
+
+        mEnrollmentErrorDialog = new Dialog(this);
+        mEnrollmentErrorDialog.setContentView(R.layout.enroll_error_dialog);
+        mEnrollmentErrorDialog.setCanceledOnTouchOutside(false);
+        onEnrollmentError = mEnrollmentErrorDialog.findViewById(R.id.errorBtn);
+        errorMsg = mEnrollmentErrorDialog.findViewById(R.id.errorMsg);
+        onEnrollmentError.setOnClickListener(view -> {
+            mEnrollmentErrorDialog.dismiss();
+            mFingerprintDialog.dismiss();
+            StartPanel.setVisibility(View.VISIBLE);
+            SendCommand(CMD_GETIMAGE, null, 0);
+
+        });
 
         mPresenter = new UpdateFingerprintActivityPresenter(mUpdateFingerprintRepo,this);
         token = mPreferences.getString("token", "Empty Token");
@@ -207,10 +236,10 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
         username.setText("Hello " + getIntent().getExtras().getString("Name"));
 
 //        Check the incoming activity and set user id
-        if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null){
-            UserId = getIntent().getExtras().getString("student", "User ID");
-        } else if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null){
+        if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null){
             UserId = getIntent().getExtras().getString("lecturerId", "User ID");
+        } else if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null){
+            UserId = getIntent().getExtras().getString("student", "User ID");
            }
 
     }
@@ -241,7 +270,9 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
                         case BluetoothReaderService.STATE_CONNECTED:
                             BTSearchPanel.setVisibility(View.GONE);
                             StartPanel.setVisibility(View.VISIBLE);
-                            SendCommand(CMD_ENROLHOST, null, 0);
+                            imgSize = IMG360;
+                            mUpImageSize = 0;
+                            SendCommand(CMD_GETIMAGE, null, 0);
                             break;
                         case BluetoothReaderService.STATE_CONNECTING:
                             Toast.makeText(UpdateFingerprintActivity.this, "Trying to connect...", Toast.LENGTH_SHORT).show();
@@ -250,6 +281,8 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
                         case BluetoothReaderService.STATE_NONE:
                             BTSearchPanel.setVisibility(View.VISIBLE);
                             StartPanel.setVisibility(View.GONE);
+                            mEnrollmentErrorDialog.dismiss();
+                            mFingerprintDialog.dismiss();
                             break;
                     }
                     break;
@@ -428,13 +461,114 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
 
         switch (sendbuf[4]) {
 
-            case CMD_ENROLHOST:
-                Toast.makeText(this, "Enroll Template ...", Toast.LENGTH_SHORT).show();
+            case CMD_GETIMAGE:
+                mUpImageSize = 0;
+                break;
+            case CMD_GETCHAR:
                 break;
 
         }
     }
 
+    private byte[] changeByte(int data) {
+        byte b4 = (byte) ((data) >> 24);
+        byte b3 = (byte) (((data) << 8) >> 24);
+        byte b2 = (byte) (((data) << 16) >> 24);
+        byte b1 = (byte) (((data) << 24) >> 24);
+        byte[] bytes = {b1, b2, b3, b4};
+        return bytes;
+    }
+
+    /**
+     * generate the image data into Bitmap format
+     * @param width width of the image
+     * @param height height of the image
+     * @param data image data
+     * @return bitmap image data
+     */
+    private byte[] toBmpByte(int width, int height, byte[] data) {
+        byte[] buffer = null;
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            DataOutputStream dos = new DataOutputStream(baos);
+
+            int bfType = 0x424d;
+            int bfSize = 54 + 1024 + width * height;
+            int bfReserved1 = 0;
+            int bfReserved2 = 0;
+            int bfOffBits = 54 + 1024;
+
+            dos.writeShort(bfType);
+            dos.write(changeByte(bfSize), 0, 4);
+            dos.write(changeByte(bfReserved1), 0, 2);
+            dos.write(changeByte(bfReserved2), 0, 2);
+            dos.write(changeByte(bfOffBits), 0, 4);
+
+            int biSize = 40;
+            int biWidth = width;
+            int biHeight = height;
+            int biPlanes = 1;
+            int biBitcount = 8;
+            int biCompression = 0;
+            int biSizeImage = width * height;
+            int biXPelsPerMeter = 0;
+            int biYPelsPerMeter = 0;
+            int biClrUsed = 256;
+            int biClrImportant = 0;
+
+            dos.write(changeByte(biSize), 0, 4);
+            dos.write(changeByte(biWidth), 0, 4);
+            dos.write(changeByte(biHeight), 0, 4);
+            dos.write(changeByte(biPlanes), 0, 2);
+            dos.write(changeByte(biBitcount), 0, 2);
+            dos.write(changeByte(biCompression), 0, 4);
+            dos.write(changeByte(biSizeImage), 0, 4);
+            dos.write(changeByte(biXPelsPerMeter), 0, 4);
+            dos.write(changeByte(biYPelsPerMeter), 0, 4);
+            dos.write(changeByte(biClrUsed), 0, 4);
+            dos.write(changeByte(biClrImportant), 0, 4);
+
+            byte[] palatte = new byte[1024];
+            for (int i = 0; i < 256; i++) {
+                palatte[i * 4] = (byte) i;
+                palatte[i * 4 + 1] = (byte) i;
+                palatte[i * 4 + 2] = (byte) i;
+                palatte[i * 4 + 3] = 0;
+            }
+            dos.write(palatte);
+
+            dos.write(data);
+            dos.flush();
+            buffer = baos.toByteArray();
+            dos.close();
+            baos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return buffer;
+    }
+
+
+    /**
+     * generate the fingerprint image
+     * @param data image data
+     * @param width width of the image
+     * @param height height of the image
+     * @param offset default setting as 0
+     * @return bitmap image data
+     */
+    public byte[] getFingerprintImage(byte[] data, int width, int height, int offset) {
+        if (data == null) {
+            return null;
+        }
+        byte[] imageData = new byte[width * height];
+        for (int i = 0; i < (width * height / 2); i++) {
+            imageData[i * 2] = (byte) (data[i + offset] & 0xf0);
+            imageData[i * 2 + 1] = (byte) (data[i + offset] << 4 & 0xf0);
+        }
+        byte[] bmpData = toBmpByte(width, height, imageData);
+        return bmpData;
+    }
 
 
     /**
@@ -444,7 +578,29 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
      */
     private void ReceiveCommand(byte[] databuf, int datasize) {
         if (mDeviceCmd == CMD_GETIMAGE) { //receiving the image data from the device
-            Toast.makeText(this, "This is for image convertion", Toast.LENGTH_SHORT).show();
+            if (imgSize == IMG360) {   //image size with 256*360
+                memcpy(mUpImage, mUpImageSize, databuf, 0, datasize);
+                mUpImageSize = mUpImageSize + datasize;
+
+                if (mUpImageSize >= 46080) {
+                    byte[] bmpdata = getFingerprintImage(mUpImage, 256, 360, 0/*18*/);
+                    Bitmap image = BitmapFactory.decodeByteArray(bmpdata, 0, bmpdata.length);
+
+                    byte[] inpdata = new byte[92160];
+                    int inpsize = 92160;
+                    System.arraycopy(bmpdata, 1078, inpdata, 0, inpsize);
+                    fingerprintImage.setImageBitmap(image);
+                    mUpImageSize = 0;
+                    mUpImageCount = mUpImageCount + 1;
+                    mIsWork = false;
+
+                    SendCommand(CMD_GETCHAR, null, 0);
+
+                } else if (mUpImageSize == 10){
+                    mFingerprintDialog.dismiss();
+                    mEnrollmentErrorDialog.show();
+                }
+            }
         } else { //other data received from the device
             // append the databuf received into mCmdData.
             memcpy(mCmdData, mCmdSize, databuf, 0, datasize);
@@ -458,31 +614,39 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
                 //parsing the mCmdData
                 if ((mCmdData[0] == 'F') && (mCmdData[1] == 'T')) {
                     switch (mCmdData[4]) {
-                        case CMD_ENROLHOST: {
+
+                        case CMD_GETCHAR: {
                             int size = (byte) (mCmdData[5]) + ((mCmdData[6] << 8) & 0xFF00) - 1;
                             if (mCmdData[7] == 1) {
-                                memcpy(mRefData, 0, mCmdData, 8, size);
-                                mRefSize = size;
-                                String JsonString = mFingerprintConverter.ByteToJsonString(mRefData);
+                                memcpy(mMatData, 0, mCmdData, 8, size);
+                                mMatSize = size;
+                                JsonString = mFingerprintConverter.ByteToJsonString(mMatData);
 
-//                                Send to database through graphQl
-                                if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null){
+                                onConfirmCapture.setOnClickListener(view -> {
 
-                                    //   finally, uploading it to the server
-                                    mPresenter.UpdateStudentFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,JsonString,token);
-                                } else if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null){
+                                    // Send to database through graphQl
+                                    if (getIntent().getExtras().getString("LecturerBioUpdateActivity") != null) {
 
-                                    //   finally, uploading it to the server
-                                    mPresenter.UpdateLecturerFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,JsonString,token);
-                                }
+                                        //   finally, uploading it to the server
+                                  mPresenter.UpdateLecturerFingerprint(reason,Integer.parseInt(newFinger) ,Integer.parseInt(prevFinger),UserId,JsonString,token);
+                                    }
+                                    else if (getIntent().getExtras().getString("StudentBioUpdateActivity") != null) {
 
-                                loadingPanel.setVisibility(View.VISIBLE);
-                                StartPanel.setVisibility(View.GONE);
+                                        // finally, uploading it to the server
+                                        mPresenter.UpdateStudentFingerprint(reason,Integer.parseInt(newFinger),Integer.parseInt(prevFinger),UserId,JsonString,token);
+                                    }
+                                    mFingerprintDialog.dismiss();
+                                    loadingPanel.setVisibility(View.VISIBLE);
+                                    StartPanel.setVisibility(View.GONE);
+                                });
 
-                            } else
-                                mErrorDialog.show();
+                                mEnrollmentErrorDialog.dismiss();
+                                mFingerprintDialog.show();
+                            } else  mEnrollmentErrorDialog.show();
                         }
                         break;
+
+
                     }
                 }
             }
@@ -499,7 +663,7 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
                 if (resultCode == Activity.RESULT_OK) {
                     // Get the device MAC address
                     String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-                    // Get the BLuetoothDevice object
+                    // Get the BluetoothDevice object
                     BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
                     // Attempt to connect to the device
                     mChatService.connect(device);
@@ -532,28 +696,27 @@ public class UpdateFingerprintActivity extends AppCompatActivity implements Upda
     @Override
     public void OnLecturerFingerprintUpdate(String message) {
         loadingPanel.setVisibility(View.GONE);
-        mSuccessDialog.show();
-        mErrorDialog.dismiss();
+        mEnrollmentSuccessfulDialog.show();
     }
 
     @Override
     public void OnStudentFingerprintUpdate(String message) {
         loadingPanel.setVisibility(View.GONE);
-        mSuccessDialog.show();
-        mErrorDialog.dismiss();
+        mEnrollmentSuccessfulDialog.show();
     }
 
     @Override
     public void OnFingerprintUpdateFailed() {
         errorMsg.setText("Fingerprint Upload not successful!");
         loadingPanel.setVisibility(View.GONE);
-        mErrorDialog.show();
+        mEnrollmentErrorDialog.show();
     }
 
     @Override
     public void OnFingerprintUpdateError(Throwable e) {
         errorMsg.setText("Error: " + e.getMessage());
         loadingPanel.setVisibility(View.GONE);
-        mErrorDialog.show();
+        mEnrollmentErrorDialog.show();
     }
+
 }
