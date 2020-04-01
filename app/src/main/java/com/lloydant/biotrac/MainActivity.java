@@ -10,7 +10,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -19,6 +18,7 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.lloydant.biotrac.Repositories.implementations.MainActivityRepo;
+import com.lloydant.biotrac.backgroundServices.FileUploadService;
 import com.lloydant.biotrac.dagger2.BioTracApplication;
 import com.lloydant.biotrac.helpers.NetworkCheck;
 import com.lloydant.biotrac.helpers.StorageHelper;
@@ -28,6 +28,7 @@ import com.lloydant.biotrac.presenters.MainActivityPresenter;
 import com.lloydant.biotrac.views.MainActivityView;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.inject.Inject;
@@ -124,7 +125,19 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
                         REQUEST_PERMISSION_CODE);
             }
         }
+    }
 
+    public void enqueueWork(){
+        File[] files = new File(mStorageHelper.createUserFolder("Attendance")).listFiles();
+        boolean filesAvailable;
+        if (files.length > 0){
+            filesAvailable = true;
+        } else filesAvailable = false;
+
+        Intent intentService = new Intent(this, FileUploadService.class);
+        intentService.putExtra("fileState", filesAvailable);
+
+        FileUploadService.enqueueWork(this, intentService);
 
     }
 
@@ -162,7 +175,11 @@ public class MainActivity extends AppCompatActivity implements MainActivityView 
 
     }
 
-
+    @Override
+    protected void onResume() {
+        super.onResume();
+        enqueueWork();
+    }
 
     @Override
     public void OnGetCourseMates(ArrayList<Coursemate> coursemates) {

@@ -49,7 +49,7 @@ public class AttendanceActivityPresenter {
             @Override
             public void onResponse(@NotNull Call call, @NotNull okhttp3.Response response) throws IOException {
                 if (response.code() == 200){
-                    mView.OnAttendanceUploaded("Attendance uploaded successfully!");
+                    mView.OnAttendanceUploaded("Attendance uploaded successfully!", file);
                 }else mView.OnUploadAttendanceFailed("Attendance upload failed, something went wrong!");
             }
 

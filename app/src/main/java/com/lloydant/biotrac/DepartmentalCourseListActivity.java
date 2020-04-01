@@ -350,7 +350,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
      * configure for the UI components
      */
     private void setupChat() {
-        Log.d(TAG, "setupChat()");
+//        Log.d(TAG, "setupChat()");
         mChatService = new BluetoothReaderService(this, mHandler);    // Initialize the BluetoothChatService to perform bluetooth connections
         mOutStringBuffer = new StringBuffer("");                    // Initialize the buffer for outgoing messages
     }
@@ -578,7 +578,7 @@ public class DepartmentalCourseListActivity extends AppCompatActivity implements
                     setupChat();
                 } else {
                     // User did not enable Bluetooth or an error occured
-                    Log.d(TAG, "BT not enabled");
+//                    Log.d(TAG, "BT not enabled");
                     Toast.makeText(this, "BT not enabled", Toast.LENGTH_SHORT).show();
                     finish();
                 }

@@ -1,7 +1,6 @@
 package com.lloydant.biotrac;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.cardview.widget.CardView;
 import androidx.core.app.ActivityCompat;
 
@@ -28,9 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.androidnetworking.AndroidNetworking;
-import com.androidnetworking.common.Priority;
-import com.androidnetworking.error.ANError;
-import com.androidnetworking.interfaces.JSONObjectRequestListener;
 import com.fgtit.fpcore.FPMatch;
 import com.fgtit.reader.BluetoothReaderService;
 import com.google.gson.Gson;
@@ -49,12 +45,7 @@ import com.lloydant.biotrac.presenters.AttendanceActivityPresenter;
 import com.lloydant.biotrac.views.AttendanceActivityView;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -65,14 +56,7 @@ import java.util.TimerTask;
 
 import javax.inject.Inject;
 
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
 
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_DEVICE_NAME;
 import static com.lloydant.biotrac.BluetoothReaderServiceVariables.MESSAGE_READ;
@@ -181,6 +165,8 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     private View mLoading;
     String filename = "";
     String jsonString = "";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -412,7 +398,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
      * configure for the UI components
      */
     private void setupChat() {
-        Log.d(TAG, "setupChat()");
+//        Log.d(TAG, "setupChat()");
 
         mChatService = new BluetoothReaderService(this, mHandler);    // Initialize the BluetoothChatService to perform bluetooth connections
         mOutStringBuffer = new StringBuffer("");                    // Initialize the buffer for outgoing messages
@@ -651,7 +637,7 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
                     setupChat();
                 } else {
                     // User did not enable Bluetooth or an error occured
-                    Log.d(TAG, "BT not enabled");
+//                    Log.d(TAG, "BT not enabled");
                     Toast.makeText(this, "BT not enabled", Toast.LENGTH_SHORT).show();
                     finish();
                 }
@@ -714,11 +700,12 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
         AttendanceObj attendanceObj = new AttendanceObj(ISOString,LecturerID,departmentalCourse,
                 students);
 
-        filename = departmentalCourse + date;
+        filename = departmentalCourse + time;
         jsonString = mGson.toJson(attendanceObj);
 
         mStorageHelper.saveJsonFile(filename, jsonString, "Attendance");
         String filepath = mStorageHelper.getFilePath(filename + ".json","Attendance");
+        // file to be uploaded
         File file = new File(filepath);
 
         if (mNetworkCheck.isNetworkAvailable()){
@@ -760,7 +747,8 @@ public class AttendanceActivity extends AppCompatActivity  implements Attendance
     }
 
     @Override
-    public void OnAttendanceUploaded(String message) {
+    public void OnAttendanceUploaded(String message, File file) {
+        file.delete();
         mLoading.setVisibility(View.GONE);
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
         finish();
