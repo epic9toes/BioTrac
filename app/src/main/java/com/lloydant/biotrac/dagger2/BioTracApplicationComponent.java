@@ -21,6 +21,7 @@ import com.lloydant.biotrac.SplashScreenActivity;
 import com.lloydant.biotrac.StudentBioUpdateActivity;
 import com.lloydant.biotrac.StudentSearchActivity;
 import com.lloydant.biotrac.UpdateFingerprintActivity;
+import com.lloydant.biotrac.backgroundServices.FileUploadService;
 
 import dagger.Component;
 
@@ -30,6 +31,9 @@ public interface BioTracApplicationComponent {
 
 //    Injected Classes
     void inject(BioTracApplication bioTracApplication);
+
+//    Injected services
+    void inject(FileUploadService fileUploadService);
 
 //    Injected activities
     void inject(LoginActivity loginActivity);

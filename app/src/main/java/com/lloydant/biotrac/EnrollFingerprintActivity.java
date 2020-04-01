@@ -367,7 +367,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
      * configure for the UI components
      */
     private void setupChat() {
-        Log.d(TAG, "setupChat()");
+//        Log.d(TAG, "setupChat()");
 
         mChatService = new BluetoothReaderService(this, mHandler);    // Initialize the BluetoothChatService to perform bluetooth connections
         mOutStringBuffer = new StringBuffer("");                    // Initialize the buffer for outgoing messages
@@ -668,7 +668,7 @@ public class EnrollFingerprintActivity extends AppCompatActivity implements Enro
                     setupChat();
                 } else {
                     // User did not enable Bluetooth or an error occured
-                    Log.d(TAG, "BT not enabled");
+//                    Log.d(TAG, "BT not enabled");
                     Toast.makeText(this, "Bluetooth was not enabled, leaving bluetooth chat.", Toast.LENGTH_SHORT).show();
                     finish();
                 }
